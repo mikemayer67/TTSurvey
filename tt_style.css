@@ -1,0 +1,38 @@
+h1 > *
+{
+  vertical-align: middle;
+}
+
+h1 > img
+{
+  margin-left: 10pt;
+  margin-right: 10pt;
+}
+
+.tt-form-instruction 
+{
+  font-weight: bold;
+}
+
+.tt-form-note
+{
+  font-style: italic;
+  color: #808080;
+}
+
+.tt-form
+{
+  max-width: 8in;
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+.tt-form .tt-invalid
+{
+  border: 2px solid red;
+}
+
+br.nospace
+{
+  margin: 0 0;
+}
