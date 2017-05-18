@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 $year = 2017;
 $tt_poc = 'Mike Mayer';
 $tt_poc_email = 'mikemayer67@vmwishes.com';

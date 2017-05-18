@@ -27,10 +27,35 @@ h1 > img
   margin-right: 2em;
 }
 
-.tt-form .tt-invalid
+.tt-form input.tt-invalid
 {
   border: 2px solid red;
 }
+
+.tt-form input.tt-pending
+{
+  border: 2px solid orange;
+}
+
+.tt-form p.tt-invalid,
+.tt-form p.tt-pending
+{
+  margin-top: 0;
+  font-size: small;
+  text-align: right;
+}
+
+.tt-form p.tt-invalid
+{
+  color: red;
+}
+
+.tt-form p.tt-pending
+{
+  color: orange;
+}
+
+
 
 br.nospace
 {

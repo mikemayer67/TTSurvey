@@ -13,31 +13,54 @@ $(function() {
 
 } );
 
+function validate_user_name()
+{
+  var input = $('#user_name');
+  var re = /^(\w+\s+\w+)$/;
+  var name = input.val();
+  name_is_good = re.test(name);
+
+  if(name_is_good) {
+    set_state(input,'tt-valid');
+    $('#name_error').remove()
+  } else {
+    var err = "<p id='name_error' class='tt-invalid' for='user_name'>Pleae provide a first and last name</p>";
+    set_state(input,'tt-pending');
+    if( ! $('#name_error').length ) input.parent().after(err)
+  }
+  check_start_survey_state();
+}
+
 function validate_user_email()
 {
   var input = $('#user_email');
   var re = /^\s*([^\s@]+@[^\s@]+\.[^\s@]+)*\s*$/;
   var email = input.val();
   email_is_good = re.test(email);
+
   if(email_is_good) {
-    input.removeClass("tt-invalid").addClass("tt-valid");
+    set_state(input,'tt-valid');
+    $('#email_error').remove()
   } else {
-    input.removeClass("tt-valid").addClass("tt-invalid");
-  }
-  check_start_survey_state();
-}
+    var ui_err = $('#email_error');
+    if( ui_err.length == 0 ) {
+      ui_err = $('<p/>', {id:'email_error', for:'user_email'} );
+        input.parent().after(ui_err);
+    }
 
-function validate_user_name()
-{
-  var input = $('#user_name');
-  var re = /^(\w{2,}\s+\w{2,})$/;
-  var name = input.val();
-  name_is_good = re.test(name);
+    var temail = email;
+    if( temail.search(/@/) == -1 )     { temail = temail.concat('@xxx.xxx'); }
+    if( temail.search(/@\w+\./) == -1 ) { temail = temail.concat('xxx.xxx');  }
 
-  if(name_is_good) {
-    input.removeClass("tt-invalid").addClass("tt-valid");
-  } else {
-    input.removeClass("tt-valid").addClass("tt-invalid");
+    if( re.test(temail) ) {
+      set_state(ui_err,'tt-pending');
+      set_state(input,'tt-pending');
+      ui_err.text('Incomplete email address');
+    } else {
+      set_state(ui_err,'tt-invalid');
+      set_state(input,'tt-invalid');
+      ui_err.text('Invalid email address');
+    }
   }
   check_start_survey_state();
 }
@@ -45,16 +68,82 @@ function validate_user_name()
 function validate_user_id()
 {
   var input = $('#user_id');
-  var re = /^\s*(?:[a-zA-Z0-9]{3}-){3}[a-zA-Z0-9]{3}\s*$/;
-  var id = input.val();
-  id_is_good = re.test(id);
+  var msg;
+  var state;
+  var id_is_ok = false;
 
-  if(id_is_good) {
-    input.removeClass("tt-invalid").addClass("tt-valid");
+  var id = input.val();
+  id = id.replace(/^\s*/, '');
+  id = id.replace(/\s*$/, '');
+
+  var re = /^(?:\w{3}-){3}\w{3}$/;
+
+  if ( id.length > 15 ) {
+    state = 'tt-invalid';
+    msg   = 'User ID is too long';
   } else {
-    input.removeClass("tt-valid").addClass("tt-invalid");
+    var tmpl = "000-000-000-000";
+    var tid = id.concat(tmpl.substr(id.length,15));
+    if( re.test(tid) ) {
+      state = 'tt-pending';
+      if( id.length == 15 ) { 
+        id_is_ok = true;
+        msg = 'Validating User ID'; 
+      } else { 
+        msg = 'Incomplete User ID' 
+      }
+    } else {
+      state = 'tt-invalid';
+      msg   = 'Invalid User ID format';
+    }
   }
-  check_resume_survey_state();
+
+  $('#resume_survey_button').closest('div.submit').hide(400);
+
+  var ui_err = $('#user_id_error');
+  var has_ui_err = ui_err.length > 0;
+
+  set_state(input, state);
+
+  if( id.length == 0 ) {
+
+    if( has_ui_err ) { ui_err.remove(); }
+    set_state(input,'tt-valid');
+
+  } else {
+
+    if( has_ui_err ) {
+      set_state(ui_err, state);
+      ui_err.text(msg);
+      ui_err.show();
+    } else {
+      ui_err = $('<p/>', { id:'user_id_error', for:'user_id', text:msg } );
+        input.parent().after(ui_err);
+    }
+
+    if( id_is_ok ) {
+      $.ajax( {
+        type: 'POST',
+        url:  'validate.php',
+        data: { user_id: id },
+        success: function(data) {
+          set_state(input,'tt-valid');
+          ui_err.remove();
+          $('#resume_survey_button').closest('div.submit').show(400);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          set_state(input,'tt-invalid');
+          set_state(ui_err,'tt-invalid');
+          ui_err.text(jqXHR.statusText);
+        }
+      } )
+    }
+  }
+}
+
+function set_state(item,state)
+{
+  item.removeClass('tt-invalid').removeClass('tt-invalid').removeClass('tt-pending').addClass(state);
 }
 
 function check_start_survey_state()
@@ -63,14 +152,5 @@ function check_start_survey_state()
     $('#start_survey_button').closest('div.submit').show(400);
   } else {
     $('#start_survey_button').closest('div.submit').hide(400);
-  }
-}
-
-function check_resume_survey_state()
-{
-  if( id_is_good ) {
-    $('#resume_survey_button').closest('div.submit').show(400);
-  } else {
-    $('#resume_survey_button').closest('div.submit').hide(400);
   }
 }
