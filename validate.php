@@ -17,8 +17,6 @@ if( isset( $_REQUEST['user_id'] ) )
     $sql = "select name,email from participants where user_id='$user_id'";
     if( $result = $db->query($sql) ) 
     {
-      $n = $result->num_rows;
-      error_log("Found $n rows that match $user_id");
       if ( $result->num_rows == 1 )
       {
         $returnCode = '200 Valid UserID';
