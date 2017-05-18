@@ -15,7 +15,6 @@ function db_connect()
   }
   else
   {
-    error_log("Succesfully connected to $db_user/$db_pass@$db_host.$db_name");
     return $db;
   }
 }

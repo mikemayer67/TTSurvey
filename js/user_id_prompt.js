@@ -16,18 +16,28 @@ $(function() {
 function validate_user_name()
 {
   var input = $('#user_name');
-  var re = /^(\w+\s+\w+)$/;
+  var re = /^([a-z_]{2,}\s+[a-z_]{2,})$/i;
   var name = input.val();
   name_is_good = re.test(name);
+  
+  var name_error = $('#name_error');
+  var has_name_error = name_error.length > 0;
 
   if(name_is_good) {
     set_state(input,'tt-valid');
-    $('#name_error').remove()
-  } else {
-    var err = "<p id='name_error' class='tt-invalid' for='user_name'>Pleae provide a first and last name</p>";
+    name_error.remove();
+  } else if (name.length == 0) {
     set_state(input,'tt-pending');
-    if( ! $('#name_error').length ) input.parent().after(err)
+    name_error.remove();
+  } else {
+    set_state(input,'tt-pending');
+    if( ! has_name_error ) {
+      var name_error = $('<p/>', { id:'name_error', class:'tt-pending', for:'user_name' ,
+                         text:'Pleae provide a first and last name'} );
+      input.parent().after(name_error);
+    }
   }
+
   check_start_survey_state();
 }
 
@@ -103,11 +113,15 @@ function validate_user_id()
   var ui_err = $('#user_id_error');
   var has_ui_err = ui_err.length > 0;
 
+  $('#user_id_info').remove()
+  $('#lost_user_id_help').show();
+
   set_state(input, state);
 
   if( id.length == 0 ) {
 
     if( has_ui_err ) { ui_err.remove(); }
+
     set_state(input,'tt-valid');
 
   } else {
@@ -117,18 +131,41 @@ function validate_user_id()
       ui_err.text(msg);
       ui_err.show();
     } else {
-      ui_err = $('<p/>', { id:'user_id_error', for:'user_id', text:msg } );
+      ui_err = $('<p/>', { id:'user_id_error', for:'user_id', class:state, text:msg } );
         input.parent().after(ui_err);
     }
 
     if( id_is_ok ) {
       $.ajax( {
-        type: 'POST',
+        type: 'GET',
         url:  'validate.php',
         data: { user_id: id },
         success: function(data) {
           set_state(input,'tt-valid');
           ui_err.remove();
+
+          var ui_info = $('<table/>', { id:'user_id_info'} );
+
+          var row;
+          var cell;
+
+          row = $('<tr/>');
+          ui_info.append(row);
+          cell = $('<td/>', {class:'tt-ui-label-cell', html:'Name:'} );
+          row.append(cell);
+          cell = $('<td/>', {class:'tt-ui-value-cell', html:data['name']} );
+          row.append(cell);
+
+          row = $('<tr/>');
+          ui_info.append(row);
+          cell = $('<td/>', {class:'tt-ui-label-cell', html:'Email:'} );
+          row.append(cell);
+          cell = $('<td/>', {class:'tt-ui-value-cell', html:data['email'] } );
+          row.append(cell);
+
+          input.parent().after(ui_info);
+          $('#lost_user_id_help').hide();
+
           $('#resume_survey_button').closest('div.submit').show(400);
         },
         error: function(jqXHR, textStatus, errorThrown) {

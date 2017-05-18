@@ -55,6 +55,16 @@ h1 > img
   color: orange;
 }
 
+.tt-ui-label-cell
+{
+  font-weight:bold;
+}
+
+#user_id_info
+{
+  margin-left:2em;
+  margin-top:1em;
+}
 
 
 br.nospace

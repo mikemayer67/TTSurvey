@@ -39,7 +39,7 @@
       <p class='tt-form-note'>If you provided an email address, a copy should have been sent to you by email.</p>
       <label for='user_id'>User ID</label>
       <input type='text' name='user_id' id='user_id' placeholder="XXX-XXX-XXX-XXX" autocomplete="off">
-      <p>If you cannot find your user ID, please contact <?=$tt_poc_email_link?> to retrieve it.</p>
+      <p id='lost_user_id_help'>If you cannot find your user ID, please contact <?=$tt_poc_email_link?> to retrieve it.</p>
       <div class=submit><input id='resume_survey_button' type="submit" value="Resume Surey..."></div>
     </form>
   </div>
