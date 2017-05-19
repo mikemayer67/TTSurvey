@@ -9,6 +9,14 @@ h1 > img
   margin-right: 10pt;
 }
 
+h1.tt-error,
+h2.tt-error,
+h3.tt-error,
+h4.tt-error
+{
+  color:red;
+}
+
 .tt-form-instruction 
 {
   font-weight: bold;

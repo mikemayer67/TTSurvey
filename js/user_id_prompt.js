@@ -16,7 +16,7 @@ $(function() {
 function validate_user_name()
 {
   var input = $('#user_name');
-  var re = /^([a-z_]{2,}\s+[a-z_]{2,})$/i;
+  var re = /^\s*[a-z][a-z.]+(\s+[a-z][a-z.]+)+\s*$/i;
   var name = input.val();
   name_is_good = re.test(name);
   

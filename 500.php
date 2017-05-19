@@ -1,5 +1,5 @@
 <?php 
-require_once('tt_init.php'); 
+require_once(dirname(__FILE__).'/tt_init.php'); 
 ?>
 
 <html><head><title>500 Server Error</title></head>
@@ -17,7 +17,7 @@ Please contact <?=$tt_poc_email_link?> to investigate the error.
 
 <br>
 
-<center><img src='img/sick-computer.jpg'/></center>
+<img src='img/sick-computer.jpg' height=300/ style="margin:1em 2em;">
 
 <hr>
 
