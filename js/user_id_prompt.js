@@ -138,7 +138,7 @@ function validate_user_id()
     if( id_is_ok ) {
       $.ajax( {
         type: 'GET',
-        url:  'validate.php',
+        url:  'ajax_validate.php',
         data: { user_id: id },
         success: function(data) {
           set_state(input,'tt-valid');

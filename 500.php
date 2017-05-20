@@ -29,3 +29,5 @@ Please contact <?=$tt_poc_email_link?> to investigate the error.
 
 </body>
 </html>
+
+<?php exit ?>

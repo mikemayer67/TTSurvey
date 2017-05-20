@@ -14,6 +14,8 @@ $tt_page_title = "<h1 id='page_title'><img src='img/cts_logo.png' height=50>$tt_
 
 $tt_max_gen_id_attempts = 256;
 
-$tt_nojs = isset($_GET["nojs"]);
+$tt_nojs = isset($_REQUEST["nojs"]);
+
+require_once(dirname(__FILE__).'/db.php');
 
 ?>

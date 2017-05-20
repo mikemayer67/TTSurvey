@@ -1,23 +1,29 @@
 <?php
 
 
-function gen_user_id()
+function gen_user_id($max_attempts)
 {
   $pool = '123456789123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
   $npool = strlen($pool);
 
-  $keys = array();
-  for( $i=0; $i<12; $i++)
+  for($attempt=0; $attempt<$max_attempts; ++$attempt)
   {
-    if( $i>0 && $i % 3 == 0 ) { 
-      $keys[] = '-'; 
+    $keys = array();
+    for( $i=0; $i<12; $i++)
+    {
+      if( $i>0 && $i % 3 == 0 ) { 
+        $keys[] = '-'; 
+      }
+
+      $keys[] = substr($pool,rand(0,$npool-1),1);
     }
+    $id = implode($keys);
+    error_log(__FILE__.":: candidate: $id");
 
-    $keys[] = substr($pool,rand(0,$npool-1),1);
+    if( ! db_userid_exists($id) ) { return $id; }
   }
-  $id = implode($keys);
 
-  return $id;
+  throw new Exception("Failed to generate a unique ID in $max_attempts attempts", 500);
 }
 
 ?>
