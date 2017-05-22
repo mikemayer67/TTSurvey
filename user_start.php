@@ -76,7 +76,7 @@ try
     }
 
     $_SESSION['USER_ID'] = $user_id;
-    setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400);
+    setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
   }
   finally
   {

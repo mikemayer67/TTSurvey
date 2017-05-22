@@ -14,7 +14,7 @@
 <?php
 
 if( ! $tt_nojs ) { 
-  $host  = $_SERVER['HTTP_HOST'];
+  $host  = $_SERVER['SERVER_NAME'];
   $uri   = $_SERVER['REQUEST_URI'];
   $query = parse_url($uri,PHP_URL_QUERY);
   $url = "http://$host$uri" . (count($query)>0 ? '&' : '?') . 'nojs';

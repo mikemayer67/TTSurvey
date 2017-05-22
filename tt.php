@@ -2,17 +2,29 @@
 
 $dir = dirname(__FILE__);
 
+$tt_delog = 1;
+
 error_log('----------NEW TT-------------');
 
 require_once("$dir/tt_init.php");
 
 try
 {
-  error_log("HOST: " . $_SERVER['HTTP_HOST']);
+  error_log("HOST: " . $_SERVER['SERVER_NAME']);
   error_log(" URI: " . $_SERVER['REQUEST_URI']);
   error_log(" GET: " . count($_GET));
   error_log("POST: " . count($_POST));
   error_log(" REQ: " . count($_REQUEST));
+  if( $tt_delog > 0 )
+  {
+    error_log("GET: " . print_r($_GET,true));
+    error_log("POST: " . print_r($_POST,true));
+    error_log("REQUEST: " . print_r($_REQUEST,true));
+    error_log("SESSION: " . print_r($_SESSION,true));
+    error_log("COOKIES: " . print_r($_COOKIE,true));
+    error_log("HTTP HEADERS...");
+    foreach (getallheaders() as $name => $value) { error_log("$name: $value"); }
+  }
   error_log("NOJS: " . ((isset($tt_nojs) && $tt_nojs) ? "YES" : "NO"));
 
   $page;
@@ -28,7 +40,7 @@ try
     {
       $page = 'user_id_prompt';
       unset($_SESSION['USER_ID']);
-      setcookie('USER_ID', $_SESSION['USER_ID'], time()-3600);
+      setcookie('USER_ID', '', 0, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
     }
     else
     {
@@ -40,7 +52,7 @@ try
       }
 
       $_SESSION['USER_ID'] = $user_id;
-      setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400);
+      setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
       $page = 'survey';
     }
 
@@ -54,7 +66,7 @@ try
   else if( isset($_SESSION['USER_ID']) )
   {
     $user_id = $_SESSION['USER_ID'];
-    setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400);
+    setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
     $page = 'survey';
   }
   else if (isset($_COOKIE['USER_ID']) )

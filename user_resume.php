@@ -10,7 +10,8 @@ $user_id  = strtoupper($_REQUEST['user_id']);
 if( db_userid_exists($user_id) )
 {
   $_SESSION['USER_ID'] = $user_id;
-  setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400);
+  error_log("setcookie: ".$_SESSION['USER_ID']);
+  setcookie('USER_ID', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
 
   require("$dir/survey.php");
 }
