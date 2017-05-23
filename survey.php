@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<?php require(dirname(__FILE__).'/tt_head.php'); ?>
+<?php require("$dir/tt_head.php"); ?>
 
 <script src="js/user_verify.js?v=<?=rand()?>"></script>
 

@@ -1,17 +1,5 @@
-<?php if($tt_nojs) {
-  $host  = $_SERVER['HTTP_HOST'];
-  $uri   = $_SERVER['REQUEST_URI'];
-  $uri = preg_replace('/nojs[^&]*[&]?/','',$uri);
-  $uri = preg_replace('/[?&]$/','',$uri);
-  $query = parse_url($uri,PHP_URL_QUERY);
-  $url = "http://$host$uri";
-  error_log(__FILE__."NOJS REDIRECT: $url");
-?> 
-<script> window.location.replace('<?=$url?>'); </script>
-<?php } ?>
-
 <meta charset="UTF-8">
-<title><?=$tt_title?></title>
+<title class=tt-title><?=$tt_title?></title>
 
 <!-- Include meta tag to ensure proper rendering and touch zooming -->
 <meta name="viewport" content="width=device-width, initial-scale=1">

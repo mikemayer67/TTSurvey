@@ -17,6 +17,11 @@ h4.tt-error
   color:red;
 }
 
+.tt-title
+{
+  padding-top: 1em;
+}
+
 .tt-form-instruction 
 {
   font-weight: bold;
@@ -78,4 +83,23 @@ h4.tt-error
 br.nospace
 {
   margin: 0 0;
+}
+
+div.tt-noscript
+{
+  font-family: sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  font-size: 120%;
+  color: white;
+  background-color: brown;
+  padding: 5px 0;
+}
+
+p.tt-noscript
+{
+  color: brown;
 }

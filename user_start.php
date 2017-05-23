@@ -45,7 +45,7 @@ try
     throw new Exception('user_id_prompt',0);
   }
 
-  $user_id = strtoupper(gen_user_id($tt_max_gen_id_attempts));
+  $user_id = strtoupper(gen_user_id());
 
   error_log("New User ID Generated: $user_id  for: $name");
 

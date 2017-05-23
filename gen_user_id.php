@@ -1,10 +1,11 @@
 <?php
 
-
-function gen_user_id($max_attempts)
+function gen_user_id()
 {
   $pool = '123456789123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
   $npool = strlen($pool);
+
+  $tt_max_gen_id_attempts = 256;
 
   for($attempt=0; $attempt<$max_attempts; ++$attempt)
   {

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<?php require(dirname(__FILE__).'/tt_head.php'); ?>
+<?php require("$dir/tt_head.php"); ?>
 
 <script src="js/user_verify.js?v=<?=rand()?>"></script>
 
@@ -12,23 +12,11 @@
 <?=$tt_page_title?>
 
 <?php
-
-if( ! $tt_nojs ) { 
-  $host  = $_SERVER['SERVER_NAME'];
-  $uri   = $_SERVER['REQUEST_URI'];
-  $query = parse_url($uri,PHP_URL_QUERY);
-  $url = "http://$host$uri" . (count($query)>0 ? '&' : '?') . 'nojs';
+require("$dir/noscript.php");
 ?>
-
-<noscript>
-    <p>This site is best viewed with Javascript.<br class='nospace'>
-    If you are unable to turn on Javascript, please consider using the <a href='<?=$url?>'>Non-Javascript variation</a> of this form.</p>
-</noscript>
-<?php } ?>
 
 <h2 id="confirm_userid">Confirm User Info</h2>
 <form id="confirm_user_form" class='tt-form' method='post' action='tt.php'>
-  <?php if($tt_nojs) { print "<input type=hidden name=nojs value=1>"; } ?>
   <input type=hidden name=confirmed value='<?=$user_id?>'>
   <p class='tt-form-instruction'>Before we get started, please confirm that I have the correct survey</p>
   <table id='user_id_info'>

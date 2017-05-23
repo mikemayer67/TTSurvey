@@ -25,7 +25,6 @@ try
     error_log("HTTP HEADERS...");
     foreach (getallheaders() as $name => $value) { error_log("$name: $value"); }
   }
-  error_log("NOJS: " . ((isset($tt_nojs) && $tt_nojs) ? "YES" : "NO"));
 
   $page;
 

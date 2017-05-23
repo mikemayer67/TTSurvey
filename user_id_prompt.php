@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<?php require(dirname(__FILE__).'/tt_head.php'); ?>
+<?php require("$dir/tt_head.php"); ?>
 
 <script src="js/user_id_prompt.js?v=<?=rand()?>"></script>
 
@@ -12,16 +12,7 @@
 <?=$tt_page_title?>
 
 <?php
-
-if($tt_nojs == false) { ?>
-
-<noscript>
-    <p>This site is best viewed with Javascript.<br class='nospace'>
-    If you are unable to turn on Javascript, please consider using the <a href="tt.php?nojs">Non-Javascript variation</a> of this form.</p>
-</noscript>
-
-<?php
-}
+require("$dir/noscript.php");
 
 if( isset($tt_error) )
 {
@@ -33,13 +24,11 @@ if( isset($tt_error) )
   <div data-role="collapsible">
     <h2 id="new_survey">Start a new survey</h2> 
     <form id='new_survey_form' class='tt-form' method='post' action="tt.php">
-      <?php if($tt_nojs) { print "<input type=hidden name=nojs value=1>"; } ?>
       <input type=hidden name=action value=start>
       <p class='tt-form-instruction'>Before we get started, please provide your name and email address.</p>
       <label for="user_name">Name:</label>
       <input type="text" name="user_name" id="user_name" placeholder="Your name here..." autocomplete="off"
       <?php if( isset($name) ) { print " value='$name'"; } ?>) >
-      <?php if($tt_nojs) { print "<br class='nospace'>"; }; ?>
       <label for="user_email">Email:</label>
       <input type="text" name="user_email" id="user_email" placeholder="(optional)" autocomplete="off"
       <?php if( isset($email) ) { print " value='$email'"; } ?>) >
@@ -50,7 +39,6 @@ if( isset($tt_error) )
   <div data-role="collapsible">
     <h2>Resume an existing survey</h2>
       <form id="resume_survey_form" class='tt-form' method='post' action="tt.php" autocomplete="off">
-      <?php if($tt_nojs) { print "<input type=hidden name=nojs value=1>"; } ?>
       <input type=hidden name=action value=resume>
       <p class='tt-form-instruction'>Please enter the user ID issued when you started filling out the survey.</p>
       <p class='tt-form-note'>If you provided an email address, a copy should have been sent to you by email.</p>
