@@ -9,10 +9,8 @@
 
 <body>
 
-<?=$tt_page_title?>
-
 <?php
-require("$dir/noscript.php");
+require("$dir/tt_page.php");
 
 if( isset($tt_error) )
 {

@@ -9,10 +9,8 @@
 
 <body>
 
-<?=$tt_page_title?>
-
 <?php
-require("$dir/noscript.php");
+require("$dir/tt_page.php");
 ?>
 
 <h2 id="confirm_userid">Confirm User Info</h2>
