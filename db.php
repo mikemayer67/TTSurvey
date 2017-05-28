@@ -70,3 +70,43 @@ function db_user_info($id)
 
   return $data;
 }
+
+function db_update_user_name($id,$name)
+{
+  $rval = false;
+  try
+  {
+    $db = db_connect();
+
+    $id = strtoupper($id);
+
+    $sql = "update participants set name='$name' where user_id='$id'";
+    $rval = $db->query($sql);
+  }
+  finally
+  {
+    $db->close();
+  }
+
+  return $rval;
+}
+
+function db_update_user_email($id,$email)
+{
+  $rval = false;
+  try
+  {
+    $db = db_connect();
+
+    $id = strtoupper($id);
+
+    $sql = "update participants set email='$email' where user_id='$id'";
+    $rval = $db->query($sql);
+  }
+  finally
+  {
+    $db->close();
+  }
+
+  return $rval;
+}

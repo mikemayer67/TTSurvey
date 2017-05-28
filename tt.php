@@ -4,14 +4,15 @@ $dir = dirname(__FILE__);
 
 $tt_delog = 0;
 
-error_log('----------NEW TT-------------');
-
 require_once("$dir/tt_init.php");
+require_once("$dir/sendmail.php");
 
 try
 {
   if( $tt_delog > 0 )
   {
+    error_log('----------NEW TT-------------');
+
     error_log("HOST: " . $_SERVER['SERVER_NAME']);
     error_log(" URI: " . $_SERVER['REQUEST_URI']);
     error_log(" GET: " . count($_GET));
@@ -42,6 +43,7 @@ try
     {
       $page = 'user_id_prompt';
       unset($_SESSION['USER_ID']);
+      unset($_SESSION['ANON_ID']);
       setcookie('_tt_uid', '', 0, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
     }
     else
@@ -54,6 +56,12 @@ try
       }
 
       $_SESSION['USER_ID'] = $user_id;
+
+      if( isset($_REQUEST['anon_id']) )
+      {
+        $_SESSION['ANON_ID'] = $_REQUEST['anon_id'];
+      }
+
       setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
       $page = 'survey';
     }
@@ -62,6 +70,7 @@ try
   else if( isset($_REQUEST['uid']) )
   {
     $user_id = $_REQUEST['uid'];
+    if( isset($_REQUEST['aid']) ) { $anon_id = $_REQUEST['aid']; }
     $tt_link_was_used = true;
     $page = 'user_verify';
   }
@@ -81,7 +90,8 @@ try
     $page = 'user_id_prompt';
   }
 
-  error_log("Loading: $dir/$page.php");
+  if( $tt_delog > 0 ) { error_log("Loading: $dir/$page.php"); }
+
   require("$dir/$page.php");
 }
 catch (Exception $e)

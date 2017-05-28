@@ -16,9 +16,10 @@ $(function() {
 function validate_user_name()
 {
   var input = $('#user_name');
-  var re = /^\s*[a-z][a-z.]+(\s+[a-z][a-z.]+)+\s*$/i;
-  var name = input.val();
-  name_is_good = re.test(name);
+  var name  = input.val();
+  var names = name.match(/\b[a-z]+[a-z\.]\b/gi);
+
+  name_is_good = names && names.length>1;
   
   var name_error = $('#name_error');
   var has_name_error = name_error.length > 0;

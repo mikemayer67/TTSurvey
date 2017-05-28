@@ -40,11 +40,14 @@ h4.tt-error
   margin-right: 2em;
 }
 
+
+.tt-header input.tt-invalid,
 .tt-form input.tt-invalid
 {
   border: 2px solid red;
 }
 
+.tt-header input.tt-pending,
 .tt-form input.tt-pending
 {
   border: 2px solid orange;
@@ -104,7 +107,7 @@ p.tt-noscript
   color: brown;
 }
 
-#tt_survey_header
+.tt-header
 {
   background-color: #e0e0e0;
   width:100%;

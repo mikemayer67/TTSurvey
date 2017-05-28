@@ -1,6 +1,7 @@
 <?php
 
 require_once("$dir/gen_user_id.php");
+require_once("$dir/sendmail.php");
 
 $nextPage = 'survey';
 
@@ -77,6 +78,8 @@ try
 
     $_SESSION['USER_ID'] = $user_id;
     setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
+
+    email_account_info($user_id,$name,$email,'');
   }
   finally
   {

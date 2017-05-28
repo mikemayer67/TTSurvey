@@ -5,7 +5,7 @@ function gen_user_id()
   $pool = '123456789123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
   $npool = strlen($pool);
 
-  $tt_max_gen_id_attempts = 256;
+  $max_attempts = 256;
 
   for($attempt=0; $attempt<$max_attempts; ++$attempt)
   {
@@ -19,7 +19,6 @@ function gen_user_id()
       $keys[] = substr($pool,rand(0,$npool-1),1);
     }
     $id = implode($keys);
-    error_log(__FILE__.":: candidate: $id");
 
     if( ! db_userid_exists($id) ) { return $id; }
   }

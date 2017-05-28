@@ -7,7 +7,9 @@ require_once("$dir/db.php");
 $user_uid = $_SESSION['USER_ID'];
 $user_info = db_user_info($user_uid);
 $user_name = $user_info['name'];
-$user_email = (isset($user_info['email']) ? $user_info['email'] : "(unspecified)");
+$user_email = $user_info['email'];
+
+//if( strlen($user_email) == 0 ) { $user_email = '(unspecified)'; }
 ?>
 
 <script src="js/survey.js?v=<?=rand()?>"></script>
@@ -16,7 +18,7 @@ $user_email = (isset($user_info['email']) ? $user_info['email'] : "(unspecified)
 
 <body>
 
-<div id=tt_survey_header>
+<div id=tt_survey_header class=tt-header>
 <span id=tt_user_uid class=tt-user-info>User ID: <span><?=$user_uid?></span>
   <button data-role='none'>logout</button></span>
 <span id=tt_user_name class=tt-user-info>Name: <span><?=$user_name?></span>

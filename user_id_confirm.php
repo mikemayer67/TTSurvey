@@ -14,6 +14,11 @@ require("$dir/tt_page.php");
 <h2 id="confirm_userid">Confirm User Info</h2>
 <form id="confirm_user_form" class='tt-form' method='post' action='tt.php'>
   <input type=hidden name=confirmed value='<?=$user_id?>'>
+<?php if( isset($anon_id) ) { ?>
+  <input type=hidden name=anon_id value='<?=$anon_id?>'>
+<?php } ?>
+  <input type=hidden name=user_name value='<?=$user_name?>'>
+  <input type=hidden name=user_email value='<?=$user_email?>'>
   <p class='tt-form-instruction'>Before we get started, please confirm that I have the correct survey</p>
   <table id='user_id_info'>
   <tr><td class=tt-ui-label-cell>Name:</td><td class=tt-ui-value-cell><?=$user_name?></td></tr>
