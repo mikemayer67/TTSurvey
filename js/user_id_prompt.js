@@ -3,9 +3,9 @@ var name_is_good  = false;
 var id_is_good  = false;
 
 $(function() {
-  validate_user_email()
-  validate_user_name()
-  validate_user_id()
+  validate_user_email();
+  validate_user_name();
+  validate_user_id();
 
   $('#user_email').on('input',validate_user_email);
   $('#user_name').on('input',validate_user_name);

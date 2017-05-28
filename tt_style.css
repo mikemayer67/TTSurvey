@@ -103,3 +103,29 @@ p.tt-noscript
 {
   color: brown;
 }
+
+#tt_survey_header
+{
+  background-color: #e0e0e0;
+  width:100%;
+  overflow: auto;
+}
+
+span.tt-user-info
+{
+  font-family: sans-serif;
+  font-size: small;
+  font-weight: bold;
+  margin-right: 1em;
+}
+
+#tt_user_name,
+#tt_user_email
+{
+  float:right;
+}
+
+span.tt-user-info span
+{
+  font-weight: normal;
+}

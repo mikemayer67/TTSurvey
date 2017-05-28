@@ -2,7 +2,11 @@
 require_once(dirname(__FILE__).'/tt_init.php'); 
 ?>
 
-<html><head><title>404 Server Error</title></head>
+<html>
+
+<head>
+  <title>404 Server Error</title>
+</head>
 
 <body bgcolor=white>
 <?=$tt_page_title?>

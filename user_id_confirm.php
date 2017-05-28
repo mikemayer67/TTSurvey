@@ -3,8 +3,6 @@
 <head>
 <?php require("$dir/tt_head.php"); ?>
 
-<script src="js/user_verify.js?v=<?=rand()?>"></script>
-
 </head>
 
 <body>

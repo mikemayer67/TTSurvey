@@ -11,6 +11,17 @@
 <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 
 <!-- Include the jQuery Mobile library -->
+
+<script>
+$(document).on("mobileinit", function(){
+  $.extend( $.mobile, {
+    linkBindingEnabled: false,
+    ajaxEnabled: false
+  } );
+});
+
+</script>
+
 <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 
 <!-- T&T Survey stylesheet -->
