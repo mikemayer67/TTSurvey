@@ -1,3 +1,6 @@
+
+var no_email = '(unspecified)';
+
 var user_name;
 var user_email;
 
@@ -13,7 +16,7 @@ $(function() {
   user_email = $('#tt_user_email span').text(); 
 
   if( user_email.length == 0 ) {
-    $('#tt_user_email span').text('(unspecified)');
+    $('#tt_user_email span').text(no_email);
   }
 } );
 
@@ -21,7 +24,6 @@ function logout_user()
 {
   window.location='tt_logout.php';
 }
-
 
 function start_user_name_edit()
 {
@@ -151,7 +153,7 @@ function submit_user_email()
   } )
     .done( function() {
       user_email = email;
-      $('#tt_user_email span').text(user_email.length>0 ? user_email : '(unspecified)');
+      $('#tt_user_email span').text(user_email.length>0 ? user_email : no_email);
     } )
     .fail( function() {
       alert('Failed to update your email in the database');

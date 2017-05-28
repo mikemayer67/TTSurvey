@@ -19,7 +19,6 @@ h4.tt-error
 
 .tt-title
 {
-  padding-top: 1em;
 }
 
 .tt-form-instruction 
@@ -131,4 +130,19 @@ span.tt-user-info
 span.tt-user-info span
 {
   font-weight: normal;
+}
+
+.tt_survey_form
+{
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+div.tt-collapsible
+{
+  margin-left: 1em;
+}
+
+div.tt-non-collapsible
+{
 }
