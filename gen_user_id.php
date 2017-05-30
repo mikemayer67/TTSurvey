@@ -1,6 +1,6 @@
 <?php
 
-function gen_user_id()
+function gen_user_id($db)
 {
   $pool = '123456789123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
   $npool = strlen($pool);
@@ -20,10 +20,24 @@ function gen_user_id()
     }
     $id = implode($keys);
 
-    if( ! db_userid_exists($id) ) { return $id; }
+    if( ! db_userid_exists($id,$db) ) { return $id; }
   }
 
   throw new Exception("Failed to generate a unique ID in $max_attempts attempts", 500);
+}
+
+function gen_anon_id($db)
+{
+  $anon_id = gen_user_id($db);
+
+  $sql = "insert into user_ids values ('$anon_id')";
+  $result = $db->query($sql);
+  if( ! $result )
+  {
+    throw new Exception("Invalid SQL: $sql",500);
+  }
+
+  return $anon_id;
 }
 
 ?>

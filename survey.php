@@ -31,7 +31,7 @@ $user_email = $user_info['email'];
 
 <?=$tt_page_title?>
 
-<form class=tt-survey-form data-ajax=false>
+<form class=tt-survey-form method=post data-ajax=false>
 <input type=hidden name=submit_survey value=<?=$user_id?> action='tt.php'>
 
 <?php
@@ -41,9 +41,9 @@ try
   $db = db_connect();
 
   $groups       = db_survey_groups($db,$tt_year);
-  $options      = db_participation_options($db,$tt_year);
-  $qualifiers   = db_participation_qualifiers($db,$tt_year);
-  $dependencies = db_participation_dependencies($db,$tt_year);
+  $options      = db_role_options($db,$tt_year);
+  $qualifiers   = db_role_qualifiers($db,$tt_year);
+  $dependencies = db_role_dependencies($db,$tt_year);
 
   foreach ( $groups as $group )
   {
@@ -105,7 +105,7 @@ try
 
         break;
 
-      case 'participation':
+      case 'role':
 
         if( $in_list ) { print "</ul>\n"; $in_list=false; }
 
@@ -119,23 +119,23 @@ try
             throw new Exception("Missing primary options for item $item_id",500);
           }
 
-          print "<div class='tt-participation-box'>";
-          print "<div class='tt-participation-label'><span>$label</span></div>\n";
-          print "<div class='tt-participation-options'>\n";
+          print "<div class='tt-role-box'>";
+          print "<div class='tt-role-label'><span>$label</span></div>\n";
+          print "<div class='tt-role-options'>\n";
 
           foreach ( array('primary','secondary') as $key )
           {
             if( isset($item_options[$key]) )
             {
               $opts = $item_options[$key];
-              print "<div class='tt-participation-$key-options'>\n";
+              print "<div class='tt-role-$key-options'>\n";
               foreach ( $opts as $opt )
               {
                 $opt_id    = $opt['id'];
                 $opt_tag   = "item_$opt_id";
                 $opt_label = $opt['label'];
 
-                print "<span class='tt-participation-option'>";
+                print "<span class='tt-role-option'>";
                 print "<input id='$opt_tag' type='checkbox' name='$opt_tag' data-role=none";
                 if( isset($dependencies[$opt_id]) )
                 {
@@ -150,13 +150,13 @@ try
                   print " data-tt-qual='#$qual_tag'";
                 }
                 print ">";
-                print "<label class='tt-participation-option' for=$opt_tag>$opt_label</label>";
+                print "<label class='tt-role-option' for=$opt_tag>$opt_label</label>";
                 print "</input></span>\n";
               }
-              print "</div>\n"; // tt-participation-(key)-options
+              print "</div>\n"; // tt-role-(key)-options
             }
           }
-          print "</div>\n"; // tt-participation-options
+          print "</div>\n"; // tt-role-options
 
           if( $has_qual )
           {
@@ -165,14 +165,14 @@ try
             print "</div>";
           }
 
-          print "</div>\n"; // tt-participation-box
+          print "</div>\n"; // tt-role-box
         }
         else  // single unlabeled option
         {
           $tag = "item_$item_id";
-          print "<div class='tt-participation-bool'>";
-          print "<input id='$tag' type='checkbox' name='$tag' data-role=none class='tt-participation-bool'>";
-          print "<span class='tt-participation-bool-label'>$label</span>";
+          print "<div class='tt-role-bool'>";
+          print "<input id='$tag' type='checkbox' name='$tag' data-role=none class='tt-role-bool'>";
+          print "<span class='tt-role-bool-label'>$label</span>";
           print "</input>";
           print "</div>\n";
         }
@@ -183,14 +183,15 @@ try
 
         if( $in_list ) { print "</ul>\n"; $in_list=false; }
 
-        $tag = "free_text_$item_id";
+        $tag = "freetext_$item_id";
 
         print "<div class=tt-free-text-box'>";
         print "<div><span class='tt-free-text-label'>$label</span>\n";
         if( $anon )
         {
+          $anon_tag = "anon_$tag";
           print "<span class=tt-free-text-anon>";
-          print "<input type='checkbox' name='$tag-anon' data-role=none>anonymous</input>";
+          print "<input id='$anon_tag' type='checkbox' name='$anon_tag' data-role=none>anonymous</input>";
           print "</span>\n";
         }
         print "</div>\n";

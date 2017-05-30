@@ -188,17 +188,17 @@ div.tt-non-collapsible
 {
 }
 
-div.tt-participation-bool
+div.tt-role-bool
 {
   margin-left: 1em;
 }
 
-span.tt-participation-bool-label
+span.tt-role-bool-label
 {
   margin-left: 10px;
 }
 
-span.tt-participation-option
+span.tt-role-option
 {
   white-space: nowrap;
   margin-right: 1em;
@@ -211,32 +211,32 @@ input:disabled+label
   font-style:italic;
 }
 
-label.tt-participation-option
+label.tt-role-option
 {
   display:inline;
 }
 
-div.tt-participation-secondary-options
+div.tt-role-secondary-options
 {
   margin-left:1em;
 }
 
-span.tt-participation-secondary-option
+span.tt-role-secondary-option
 {
   font-style: italic;
 }
 
 @media screen and (max-width:899px)
 {
-  div.tt-participation-box
+  div.tt-role-box
   {
     margin-top: 8px;
   }
-  div.tt-participation-label
+  div.tt-role-label
   {
     margin-left:1em;
   }
-  div.tt-participation-options
+  div.tt-role-options
   {
     margin-left:2em;
   }
@@ -249,21 +249,21 @@ span.tt-participation-secondary-option
 
 @media screen and (min-width:900px)
 {
-  div.tt-participation-box
+  div.tt-role-box
   {
     margin-top: 4px;
   }
-  div.tt-participation-label
+  div.tt-role-label
   {
     float:left;
     width:35%;
   }
-  div.tt-participation-label span
+  div.tt-role-label span
   {
     float:right;
     margin-right:1em;
   }
-  div.tt-participation-options
+  div.tt-role-options
   {
     margin-left:35%;
   }

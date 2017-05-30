@@ -42,6 +42,9 @@ $(function() {
   $('input[type=checkbox][data-tt-qual]')
   .on('click',toggle_qual)
   .each(toggle_qual);
+
+  $('input[type=checkbox]').on('click',submit_checkbox_item);
+  $('textarea').on('change',submit_text_item);
   
 } );
 
@@ -210,7 +213,7 @@ function toggle_children()
 
 function toggle_qual()
 {
-  var qual   = $(this).attr('data-tt-qual');
+  var qual = $(this).attr('data-tt-qual');
 
   if( $(this).is(':checked') ) { 
     $(qual).show("fast");
@@ -220,4 +223,34 @@ function toggle_qual()
   }
 }
 
+function submit_checkbox_item()
+{
+  var id    = $(this).attr('id');
+  var value = $(this).is(':checked') ? 1 : 0;
 
+  var keys = id.split('_');
+
+  $.ajax( {
+    type: 'POST',
+    url:  'ajax_update_survey_item.php',
+    data: { keys: keys, value: value },
+  } );
+}
+
+function submit_text_item()
+{
+  var id    = $(this).attr('id');
+  var value = $(this).val();
+
+  var keys = id.split('_');
+
+  var anon_id = "#anon_" + id;
+
+  var anon = $(anon_id).is(':checked');
+
+  $.ajax( {
+    type: 'POST',
+    url:  'ajax_update_survey_item.php',
+    data: { keys: keys, value: value, anon: anon },
+  } );
+}

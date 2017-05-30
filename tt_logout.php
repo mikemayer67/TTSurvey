@@ -1,6 +1,7 @@
 <?php
 session_start();
 unset($_SESSION['USER_ID']);
+unset($_SESSION['ANON_ID']);
 setcookie('_tt_uid', '', 0, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
 
 $host = $_SERVER['SERVER_NAME'];

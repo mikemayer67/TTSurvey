@@ -46,12 +46,11 @@ try
     throw new Exception('user_id_prompt',0);
   }
 
-  $user_id = strtoupper(gen_user_id());
+  $db = db_connect(); 
+
+  $user_id = gen_user_id($db);
 
   error_log("New User ID Generated: $user_id  for: $name");
-
-
-  $db = db_connect(); 
 
   try
   {
