@@ -17,10 +17,6 @@ h4.tt-error
   color:red;
 }
 
-.tt-title
-{
-}
-
 .tt-form-instruction 
 {
   font-weight: bold;
@@ -106,11 +102,31 @@ p.tt-noscript
   color: brown;
 }
 
-.tt-header
+@media screen and (max-width: 599px)
 {
-  background-color: #e0e0e0;
-  width:100%;
-  overflow: auto;
+  .tt-header
+  {
+    background-color: #e0e0e0;
+    width:100%;
+    overflow: auto;
+  }
+}
+@media screen and (min-width:600px)
+{
+  .tt-header
+  {
+    background-color: #e0e0e0;
+    width:100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: auto;
+    z-index: 1000;
+  }
+  .tt-title
+  {
+    margin-top: 2em;
+  }
 }
 
 span.tt-user-info
@@ -132,17 +148,226 @@ span.tt-user-info span
   font-weight: normal;
 }
 
-.tt_survey_form
+#tt_landscape_note
 {
-  margin-left: 2em;
-  margin-right: 2em;
+  position:fixed;
+  top:0px;
+  left:0px;
+  width:100%;
+  background-color: #c04060;
+  z-index: 1000;
+  overflow: auto;
+  
+  text-shadow: none;
+  color: white;
+  font-weight: bold;
+  font-size: x-small;
+}
+
+.tt-survey-form
+{
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+.tt-survey-label
+{
+  margin-bottom: 5px;
 }
 
 div.tt-collapsible
 {
-  margin-left: 1em;
+}
+
+div.ui-collapsible-content
+{
+  padding-bottom: 1em;
 }
 
 div.tt-non-collapsible
 {
+}
+
+div.tt-participation-bool
+{
+  margin-left: 1em;
+}
+
+span.tt-participation-bool-label
+{
+  margin-left: 10px;
+}
+
+span.tt-participation-option
+{
+  white-space: nowrap;
+  margin-right: 1em;
+}
+
+input[disabled]+label,
+input:disabled+label
+{
+  color:#ccc;
+  font-style:italic;
+}
+
+label.tt-participation-option
+{
+  display:inline;
+}
+
+div.tt-participation-secondary-options
+{
+  margin-left:1em;
+}
+
+span.tt-participation-secondary-option
+{
+  font-style: italic;
+}
+
+@media screen and (max-width:899px)
+{
+  div.tt-participation-box
+  {
+    margin-top: 8px;
+  }
+  div.tt-participation-label
+  {
+    margin-left:1em;
+  }
+  div.tt-participation-options
+  {
+    margin-left:2em;
+  }
+
+  div.tt-qualification-text
+  {
+    margin-left:4em;
+  }
+}
+
+@media screen and (min-width:900px)
+{
+  div.tt-participation-box
+  {
+    margin-top: 4px;
+  }
+  div.tt-participation-label
+  {
+    float:left;
+    width:35%;
+  }
+  div.tt-participation-label span
+  {
+    float:right;
+    margin-right:1em;
+  }
+  div.tt-participation-options
+  {
+    margin-left:35%;
+  }
+
+  div.tt-qualification-text
+  {
+    margin-left:35%;
+    max-width:600px;
+  }
+}
+
+div.tt-free-text-box,
+div.tt-comment-box
+{
+  margin-top:2em;
+}
+
+.tt-free-text-label,
+.tt-comment-label
+{
+  font-weight: bold;
+}
+
+.tt-free-text-label,
+.tt-comment-label
+{
+  font-weight: bold;
+  margin-top:1em;
+}
+
+.tt-free-text-anon
+{
+  float: right;
+  font-size: smaller;
+  font-weight: bold;
+}
+
+textarea.tt-free-text,
+textarea.tt-comment
+{
+  margin-left:1em;
+  width:98%;
+}
+
+.tt-xx-small
+{
+  font-size: xx-small;
+}
+
+.tt-x-small
+{
+  font-size: x-small;
+}
+
+.tt-small
+{
+  font-size: small;
+}
+
+.tt-xx-large
+{
+  font-size: xx-large;
+}
+
+.tt-x-large
+{
+  font-size: x-large;
+}
+
+.tt-large
+{
+  font-size: large;
+}
+
+.tt-survey-bold
+{
+  font-weight: bold;
+}
+
+.tt-survey-italic
+{
+  font-style: italic;
+}
+
+.tt-level-2
+{
+  margin-left: 1em;
+  margin-right: 2em;
+}
+
+.tt-level-3
+{
+  margin-left: 2em;
+  margin-right: 4em;
+}
+
+.tt-level-4
+{
+  margin-left: 3em;
+  margin-right: 6em;
+}
+
+.tt-level-5
+{
+  margin-left: 4em;
+  margin-right: 8em;
 }

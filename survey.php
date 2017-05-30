@@ -27,9 +27,12 @@ $user_email = $user_info['email'];
   <button data-role='none'>fix</button></span>
 </div>
 
+<div id='tt_landscape_note' data-role='none' style='display:none;'>This page is best viewed in landscape mode on a mobile device</div>
+
 <?=$tt_page_title?>
 
-<form class=tt_survey_form>
+<form class=tt-survey-form data-ajax=false>
+<input type=hidden name=submit_survey value=<?=$user_id?> action='tt.php'>
 
 <?php
 
@@ -37,36 +40,189 @@ try
 {
   $db = db_connect();
 
-  $groups = db_survey_groups($db,$tt_year);
+  $groups       = db_survey_groups($db,$tt_year);
+  $options      = db_participation_options($db,$tt_year);
+  $qualifiers   = db_participation_qualifiers($db,$tt_year);
+  $dependencies = db_participation_dependencies($db,$tt_year);
 
   foreach ( $groups as $group )
   {
+    $in_list = false;
+
     $group_id = $group['group_index'];
     $group_label = $group['label'];
-    $collapsible = ( $group['collapsible'] 
-      ? "data-role='collapsible' data-collapsed='false' class=tt-collapsible" 
-      : 'class=tt-non-collapsible' );
 
-    print "  <div $collapsible>\n";
-    print "    <h2 id='survey_group_$group_id' style=tt-group-label>$group_label</h2>\n";
+    if( $group['collapsible'] )
+    {
+      $datarole = "data-role='collapsible' data-collapsed='false'";
+      $class    = 'tt-group tt-collapsible';
+    }
+    else
+    {
+      $datarole = '';
+      $class    = 'tt-group tt-non-collapsble';
+    }
+
+    print "<div class='$class' $datarole>\n";
+    print "<h2 id='survey_group_$group_id' class=tt-group-label>$group_label</h2>\n";
 
     $items = db_survey_items($db,$tt_year, $group_id);
 
     foreach ( $items as $item )
     {
+      $item_id = $item['item_id'];
+      $label = $item['label'];
+      $anon  = $item['anonymous'];
+
       switch( $item['item_type'] )
       {
       case 'label':
         $label = $item['label'];
-        error_log($label);
+        $type  = $item['type'];
+        $size  = $item['size'];
 
-        print "    <p>$label</p>\n";
+        $list_item = ($type === 'list');
+        if(   $list_item && ! $in_list ) { print "<ul>\n";  }
+        if( ! $list_item &&   $in_list ) { print "</ul>\n"; }
+        $in_list = $list_item;
+
+        switch( $type )
+        {
+        case 'list':
+          $class = label_class($item);
+          print "<li class='$class'>$label</li>\n";
+          break;
+        case 'text':
+          $class = label_class($item);
+          print "<p class='$class'>$label</p>\n";
+          break;
+        case 'image':
+          print "<img src='img/$label'";
+          if( $size ) print " style='height:".$size."px;'";
+          print "></img>\n";
+          break;
+        }
+
+        break;
+
+      case 'participation':
+
+        if( $in_list ) { print "</ul>\n"; $in_list=false; }
+
+        $has_qual = false;
+
+        if( isset($options[$item_id]) )
+        {
+          $item_options = $options[$item_id];
+
+          if( ! isset($item_options['primary']) ) {
+            throw new Exception("Missing primary options for item $item_id",500);
+          }
+
+          print "<div class='tt-participation-box'>";
+          print "<div class='tt-participation-label'><span>$label</span></div>\n";
+          print "<div class='tt-participation-options'>\n";
+
+          foreach ( array('primary','secondary') as $key )
+          {
+            if( isset($item_options[$key]) )
+            {
+              $opts = $item_options[$key];
+              print "<div class='tt-participation-$key-options'>\n";
+              foreach ( $opts as $opt )
+              {
+                $opt_id    = $opt['id'];
+                $opt_tag   = "item_$opt_id";
+                $opt_label = $opt['label'];
+
+                print "<span class='tt-participation-option'>";
+                print "<input id='$opt_tag' type='checkbox' name='$opt_tag' data-role=none";
+                if( isset($dependencies[$opt_id]) )
+                {
+                  $children = $dependencies[$opt_id];
+                  print " data-tt-children='$children'";
+                }
+                if( isset($qualifiers[$opt_id]) )
+                {
+                  $has_qual = true;
+                  $qual_hint = $qualifiers[$opt_id];
+                  $qual_tag  = "qual_$item_id";
+                  print " data-tt-qual='#$qual_tag'";
+                }
+                print ">";
+                print "<label class='tt-participation-option' for=$opt_tag>$opt_label</label>";
+                print "</input></span>\n";
+              }
+              print "</div>\n"; // tt-participation-(key)-options
+            }
+          }
+          print "</div>\n"; // tt-participation-options
+
+          if( $has_qual )
+          {
+            print "<div class=tt-qualification-text>";
+            print "<textarea id='$qual_tag' class='tt-qualtext' name='$qual_tag' placeholder='$qual_hint'></textarea>";
+            print "</div>";
+          }
+
+          print "</div>\n"; // tt-participation-box
+        }
+        else  // single unlabeled option
+        {
+          $tag = "item_$item_id";
+          print "<div class='tt-participation-bool'>";
+          print "<input id='$tag' type='checkbox' name='$tag' data-role=none class='tt-participation-bool'>";
+          print "<span class='tt-participation-bool-label'>$label</span>";
+          print "</input>";
+          print "</div>\n";
+        }
+
+        break;
+
+      case 'free_text':
+
+        if( $in_list ) { print "</ul>\n"; $in_list=false; }
+
+        $tag = "free_text_$item_id";
+
+        print "<div class=tt-free-text-box'>";
+        print "<div><span class='tt-free-text-label'>$label</span>\n";
+        if( $anon )
+        {
+          print "<span class=tt-free-text-anon>";
+          print "<input type='checkbox' name='$tag-anon' data-role=none>anonymous</input>";
+          print "</span>\n";
+        }
+        print "</div>\n";
+        print "<textarea id='$tag' class='tt-free-text' name='$tag'>\n";
+        print "</textarea>";
+        print "</div>\n";
 
         break;
       }
     }
+    if( $in_list ) { print "</ul>\n"; $in_list=false; }
 
-    print "  </div>\n";
+
+    if( $group['comment'] )
+    {
+      $label = 'Comments';
+      if( isset($group['comment_qualifier']) )
+      {
+        $label .= ' ('.$group['comment_qualifier'].')';
+      }
+      $label .= ':';
+      $tag = "comment_$group_id";
+
+      print "<div class=tt-comment-box>";
+      print "<div><span class='tt-comment-label'>$label</span>\n";
+      print "</div>\n";
+      print "<textarea id='$tag' class='tt-comment' name='$tag'>\n";
+      print "</textarea>";
+      print "</div>\n";
+    }
+
+    print "</div>\n";
   }
 }
 catch (Exception $e)
@@ -89,8 +245,38 @@ finally
 
 ?>
 
+<div class='submit'><input id=submit_survey_button' type='submit' data-theme=b name=submit_survey value="Submit Survey"></div>
 </form>
 
 </body>
 </html>
 
+
+<?php
+
+function label_class($x)
+{
+  $class  = 'tt-survey-label';
+
+  if( isset($x['italic']) && $x['italic'] ) { $class .= ' tt-survey-italic'; }
+  if( isset($x['bold'] )  && $x['bold']   ) { $class .= ' tt-survey-bold';   }
+
+  switch( $x['size'] )
+  {
+  case -3: $class .= ' tt-xx-small'; break;
+  case -2: $class .= ' tt-x-small';  break;
+  case -1: $class .= ' tt-small';    break;
+  case  1: $class .= ' tt-large';    break;
+  case  2: $class .= ' tt-x-large';  break;
+  case  3: $class .= ' tt-xx-large'; break;
+  }
+
+  if( isset($x['level']) )
+  {
+    $class .= ' tt-level-' . floor(abs($x['level']));
+  }
+
+  return $class;
+}
+
+?>

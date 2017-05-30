@@ -137,9 +137,10 @@ function db_survey_items($db,$year,$group)
   $data = array();
 
   $sql = "
-select si.order_index,
+    select 
+       si.item_id,
+       si.order_index,
        si.item_type,
-       si.qualification_label,
        si.note,
        si.anonymous,
        sl.type,
@@ -149,7 +150,7 @@ select si.order_index,
        sl.size,
        si.note,
        coalesce(sl.value,si.label) label
-       from survey_items si left join survey_labels as sl
+ from survey_items si left join survey_labels as sl
    on si.item_id = sl.item_id 
 where si.year = $year
   and si.group_index = $group;";
@@ -160,11 +161,103 @@ where si.year = $year
 
   while( $row = $result->fetch_assoc() )
   {
-    error_log(print_r($row,true));
     $data[] = $row;
   }
 
   $result->close();
 
   return $data;
+}
+
+function db_participation_options($db,$year)
+{
+  $rval = array();
+
+  $sql = "
+    select a.item_id,
+           a.option_id,
+           a.option_label,
+           a.is_primary
+      from survey_participation_options a
+     where exists ( select * from survey_items b
+                     where a.item_id = b.item_id
+                       and b.year = $year )
+     order by item_id,option_id;";
+
+  $result = $db->query($sql);
+
+  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+
+  while( $row = $result->fetch_row() )
+  {
+    list($item_id,$option_id,$option_label,$is_primary) = $row;
+
+    $key = ( $is_primary ? 'primary' : 'secondary' );
+
+    $rval[$item_id][$key][] = array( 'label' => $option_label,
+                                     'id'    => $item_id.'_'.$option_id );
+  }
+
+  return $rval;
+}
+
+function db_participation_qualifiers($db,$year)
+{
+  $rval = array();
+
+  $sql = "
+    select concat(a.item_id,'_',a.qualification_option),
+           a.qualification_hint
+      from survey_participation_qualifiers a
+     where exists ( select * from survey_items b
+                     where a.item_id = b.item_id
+                       and b.year = $year )";
+
+  $result = $db->query($sql);
+
+  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+
+  while( $row = $result->fetch_row() )
+  {
+    list($id,$hint) = $row;
+    $rval[$id] = $hint;
+  }
+
+  return $rval;
+}
+
+function db_participation_dependencies($db,$year)
+{
+  $rval = array();
+
+  $sql = "
+    select concat(item_id,'_',option_id) as child,
+           concat(item_id,'_',require_option_id) as parent 
+      from survey_participation_options a
+     where a.is_primary=0
+       and exists ( select * from survey_items b
+                     where a.item_id = b.item_id
+                       and b.year = $year ); ";
+
+  $result = $db->query($sql);
+
+  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+
+  while( $row = $result->fetch_row() )
+  {
+    list($child,$parent) = $row;
+
+    $child = "#item_$child";
+
+    if( isset($rval[$parent]) )
+    {
+      $rval[$parent] .= ",$child";
+    }
+    else
+    {
+      $rval[$parent] = $child;
+    }
+  }
+
+  return $rval;
 }

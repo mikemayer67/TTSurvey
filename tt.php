@@ -74,6 +74,10 @@ try
     $tt_link_was_used = true;
     $page = 'user_verify';
   }
+  else if( isset($_REQUEST['submit_survey']) )
+  {
+    throw new Exception("Not yet implemented",404);
+  }
   else if( isset($_SESSION['USER_ID']) )
   {
     $user_id = $_SESSION['USER_ID'];

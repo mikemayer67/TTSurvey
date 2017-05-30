@@ -18,6 +18,31 @@ $(function() {
   if( user_email.length == 0 ) {
     $('#tt_user_email span').text(no_email);
   }
+
+  if( window.orientation == 0 ) { 
+    $('#tt_landscape_note').show(); 
+    $('#tt_survey_header').css('margin-top', $('#tt_landscape_note').height() );
+  }
+
+  $(window).on('orientationchange', function(e) {
+    if( window.orientation == 0 ) { 
+      $('#tt_landscape_note').show(); 
+      $('#tt_survey_header').css('margin-top', $('#tt_landscape_note').height() );
+    }
+    else { 
+      $('#tt_landscape_note').hide() 
+      $('#tt_survey_header').css('margin-top',0);
+    }
+  } );
+
+  $('input[type=checkbox][data-tt-children]')
+  .on('click',toggle_children)
+  .each(toggle_children);
+  
+  $('input[type=checkbox][data-tt-qual]')
+  .on('click',toggle_qual)
+  .each(toggle_qual);
+  
 } );
 
 function logout_user()
@@ -167,3 +192,32 @@ function set_state(item,state)
 {
   item.removeClass('tt-invalid').removeClass('tt-invalid').removeClass('tt-pending').addClass(state);
 }
+
+function toggle_children()
+{
+  var children = $(this).attr('data-tt-children');
+
+  if( $(this).is(':checked') ) { 
+    $(children).prop('disabled',false)
+    .each( function() { $(this).prop('checked', $(this).data('cached') ) } );
+  }
+  else { 
+    $(children).prop('disabled',true)
+    .each( function() { $(this).data('cached', $(this).prop('checked') ) } )
+    .prop('checked',false);
+  }
+}
+
+function toggle_qual()
+{
+  var qual   = $(this).attr('data-tt-qual');
+
+  if( $(this).is(':checked') ) { 
+    $(qual).show("fast");
+  }
+  else { 
+    $(qual).hide("fast");
+  }
+}
+
+

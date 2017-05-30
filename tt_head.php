@@ -1,4 +1,6 @@
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title class=tt-title><?=$tt_title?></title>
 
 <!-- Include meta tag to ensure proper rendering and touch zooming -->
