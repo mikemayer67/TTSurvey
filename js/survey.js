@@ -229,28 +229,31 @@ function submit_checkbox_item()
   var value = $(this).is(':checked') ? 1 : 0;
 
   var keys = id.split('_');
-
-  $.ajax( {
-    type: 'POST',
-    url:  'ajax_update_survey_item.php',
-    data: { keys: keys, value: value },
-  } );
+  
+  if( keys[0] !== 'anon' )  {
+    $.ajax( {
+      type: 'POST',
+      url:  'ajax_update_survey_item.php',
+      data: { keys: keys, value: value },
+    } );
+  }
 }
 
 function submit_text_item()
 {
   var id    = $(this).attr('id');
-  var value = $(this).val();
-
-  var keys = id.split('_');
 
   var anon_id = "#anon_" + id;
 
-  var anon = $(anon_id).is(':checked');
+  if( $(anon_id).length == 0 ) {
 
-  $.ajax( {
-    type: 'POST',
-    url:  'ajax_update_survey_item.php',
-    data: { keys: keys, value: value, anon: anon },
-  } );
+    var value = $(this).val();
+    var keys = id.split('_');
+
+    $.ajax( {
+      type: 'POST',
+      url:  'ajax_update_survey_item.php',
+      data: { keys: keys, value: value },
+    } );
+  }
 }

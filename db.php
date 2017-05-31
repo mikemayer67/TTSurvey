@@ -26,12 +26,15 @@ function db_userid_exists($id,$db=null)
     $tmp_db = true;
     $db = db_connect();
   }
+  else
+  {
+    $tmp_db = false;
+  }
 
   $sql = "select user_id from participants where user_id='$id'";
   $result = $db->query($sql);
 
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500);
-  }
+  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
 
   $n = $result->num_rows;
   $result->close();
@@ -111,10 +114,9 @@ function db_update_user_email($id,$email)
   return $rval;
 }
 
-function db_update_participation_history($db,$year,$user_id,$submitted)
+function db_add_participation_history($db,$year,$user_id)
 {
-  $sql = "insert ignore into participation_history values ('$user_id',$year,$submitted)";
-  error_log($sql);
+  $sql = "insert ignore into participation_history values ('$user_id',$year,0)";
 
   $result = $db->query($sql);
 }
@@ -272,14 +274,75 @@ function db_role_dependencies($db,$year)
   return $rval;
 }
 
-function db_update_role($db,$year,$user_id,$item_id,$value,$submitted)
+function db_clear_unsubmitted($db,$year,$user_id)
 {
-  db_update_participation_history($db,$year,$user_id,$submitted);
+  db_clear($db,$year,$user_id,0);
+}
+
+function db_clear_submitted($db,$year,$user_id)
+{
+  db_clear($db,$year,$user_id,1);
+}
+
+function db_clear($db,$year,$user_id,$submitted)
+{
+  $tables = array(
+    'response_group_comment',
+    'response_free_text',
+    'response_role_options', 
+    'response_roles',
+    'participation_history' );
+
+  foreach ( $tables as $table )
+  {
+    $sql = "
+      delete from $table 
+       where user_id='$user_id' 
+         and year=$year 
+         and submitted=$submitted";
+
+    $result = $db->query($sql);
+
+    if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  }
+
+
+}
+
+function db_promote($db,$year,$user_id)
+{
+  db_clear($db,$year,$user_id,1);
+
+  // note that response_role_options will cascade update
+  $tables = array(
+    'response_group_comment', 
+    'response_free_text', 
+    'response_roles',
+    'particpation_history' );
+
+  foreach ( $tables as $table )
+  {
+    $sql = "
+      update $table 
+         set submitted=1
+       where user_id='$user_id'
+         and year=$year; ";
+
+    $result = $db->query($sql);
+
+    if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  }
+
+}
+
+function db_update_role($db,$year,$user_id,$item_id,$value)
+{
+  db_add_participation_history($db,$year,$user_id);
 
   $sql = "
-    insert into response_role 
+    insert into response_roles
            (user_id, year, submitted, item_id, selected)
-    values ('$user_id', $year, $submitted, $item_id, $value)
+    values ('$user_id', $year, 0, $item_id, $value)
         on duplicate key update
            selected = $value;";
 
@@ -288,16 +351,16 @@ function db_update_role($db,$year,$user_id,$item_id,$value,$submitted)
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
 }
 
-function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value,$submitted)
+function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value)
 {
-  db_update_participation_history($db,$year,$user_id,$submitted);
+  db_add_participation_history($db,$year,$user_id);
 
-  db_update_role($db,$year,$user_id,$item_id,$value,$submitted);
+  db_update_role($db,$year,$user_id,$item_id,$value);
 
   $sql = "
     insert into response_role_options
            (user_id, year, submitted, item_id, option_id, selected)
-    values ('$user_id', $year, $submitted, $item_id, $option_id, $value)
+    values ('$user_id', $year, 0, $item_id, $option_id, $value)
         on duplicate key update
            selected = $value;";
 
@@ -306,10 +369,9 @@ function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value,$su
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
 }
 
-function db_update_group_comment($db,$year,$user_id,$group_index,$value,$submitted)
+function db_update_group_comment($db,$year,$user_id,$group_index,$value)
 {
-  error_log('db_update_group_comment');
-  db_update_participation_history($db,$year,$user_id,$submitted);
+  db_add_participation_history($db,$year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
@@ -322,10 +384,8 @@ function db_update_group_comment($db,$year,$user_id,$group_index,$value,$submitt
       delete from response_group_comment
        where user_id='$user_id'
          and year=$year
-         and submitted=$submitted
+         and submitted=0
          and group_index=$group_index;";
-
-    error_log($sql);
 
     $result = $db->query($sql);
   }
@@ -334,21 +394,19 @@ function db_update_group_comment($db,$year,$user_id,$group_index,$value,$submitt
     $sql = "
       insert into response_group_comment
             (user_id, year, submitted, group_index, text)
-      values ('$user_id', $year, $submitted, $group_index, '$value')
+      values ('$user_id', $year, 0, $group_index, '$value')
           on duplicate key update
             text = '$value';";
 
-    error_log($sql);
     $result = $db->query($sql);
   }
 
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
 }
 
-function db_update_role_qualifier($db,$year,$user_id,$item_id,$value,$submitted)
+function db_update_role_qualifier($db,$year,$user_id,$item_id,$value)
 {
-  error_log('db_update_role_qualifier');
-  db_update_participation_history($db,$year,$user_id,$submitted);
+  db_add_participation_history($db,$year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
@@ -361,10 +419,8 @@ function db_update_role_qualifier($db,$year,$user_id,$item_id,$value,$submitted)
       delete from response_roles 
        where user_id='$user_id'
          and year=$year
-         and submitted=$submitted
+         and submitted=0
          and item_id=$item_id;";
-
-    error_log($sql);
 
     $result = $db->query($sql);
   }
@@ -375,10 +431,8 @@ function db_update_role_qualifier($db,$year,$user_id,$item_id,$value,$submitted)
          set qualifier='$value'
        where user_id='$user_id'
          and year=$year
-         and submitted=$submitted
+         and submitted=0
          and item_id=$item_id;";
-
-    error_log($sql);
 
     $result = $db->query($sql);
 
@@ -386,20 +440,17 @@ function db_update_role_qualifier($db,$year,$user_id,$item_id,$value,$submitted)
       $sql = "
         insert into response_roles
                (user_id, year, submitted, item_id, selected, qualifer)
-        values ('$user_id', $year, $submitted, $group_index, 0, '$value'); ";
+        values ('$user_id', $year, 0, $group_index, 0, '$value'); ";
 
-      error_log($sql);
       $result = $db->query($sql);
     }
   }
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
 }
 
-function db_update_freetext($db,$year,$user_id,$item_id,$value,$submitted)
+function db_update_freetext($db,$year,$user_id,$item_id,$value)
 {
-  error_log('db_update_freetext');
-
-  db_update_participation_history($db,$year,$user_id,$submitted);
+  db_add_participation_history($db,$year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
@@ -412,10 +463,8 @@ function db_update_freetext($db,$year,$user_id,$item_id,$value,$submitted)
       delete from response_free_text
        where user_id='$user_id'
          and year=$year
-         and submitted=$submitted
+         and submitted=0
          and item_id=$item_id;";
-
-    error_log($sql);
 
     $result = $db->query($sql);
   }
@@ -424,106 +473,13 @@ function db_update_freetext($db,$year,$user_id,$item_id,$value,$submitted)
     $sql = "
       insert into response_free_text
              (user_id, year, submitted, item_id, text)
-      values ('$user_id', $year, $submitted, $item_id, '$value')
+      values ('$user_id', $year, 0, $item_id, '$value')
           on duplicate key update
              text = '$value';";
 
-    error_log($sql);
     $result = $db->query($sql);
   }
 
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
 }
 
-function db_transfer_group_comment($db,$year,$from_id,$to_id,$group_index,$submitted)
-{
-  error_log('db_transfer_group_comment');
-
-  try
-  {
-    $sql = "
-      select text 
-        from response_group_comment
-       where user_id = '$from_id'
-         and year = $year
-         and submitted = $submitted
-         and group_index = $group_index; ";
-
-    error_log($sql);
-
-    $result = $db->query($sql);
-
-    $n = $result->num_rows;
-
-    if( $n > 0 )
-    {
-      $row = $result->fetch_row();
-      $text = $row[0];
-    }
-    else
-    {
-      $text = '';
-    }
-    $result->close();
-    db_update_group_comment($db,$year,$to_id,$group_index,$text,$submitted);
-
-    $sql = "
-      delete from response_group_comment
-       where user_id = '$from_id'
-         and year = $year
-         and submitted = $submitted
-         and group_index = $group_index; ";
-
-    error_log($sql);
-
-    $result = $db->query($sql);
-
-  }
-  catch(Exception $e)
-  {}
-}
-
-function db_transfer_freetext($db,$year,$from_id,$to_id,$item_id,$submitted)
-{
-  error_log('db_transfer_freetext');
-
-  try
-  {
-    $sql = "
-      select text 
-        from response_free_text
-       where user_id = '$from_id'
-         and year = $year
-         and submitted = $submitted
-         and item_id = $item_id; ";
-
-    error_log($sql);
-
-    $result = $db->query($sql);
-
-    $n = $result->num_rows;
-
-    if( $n > 0 )
-    {
-      $row = $result->fetch_row();
-      $text = $row[0];
-    }
-    else
-    {
-      $text = '';
-    }
-    $result->close();
-    db_update_freetext($db,$year,$to_id,$item_id,$text,$submitted);
-
-    $sql = "
-      delete from response_free_text
-       where user_id = '$from_id'
-         and year = $year
-         and submitted = $submitted
-         and item_id = $item_id; ";
-
-    $result = $db->query($sql);
-  }
-  catch(Exception $e)
-  {}
-}

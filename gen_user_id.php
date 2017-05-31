@@ -37,6 +37,8 @@ function gen_anon_id($db)
     throw new Exception("Invalid SQL: $sql",500);
   }
 
+  $_SESSION['ANON_ID'] = $anon_id;
+
   return $anon_id;
 }
 

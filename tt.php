@@ -32,14 +32,14 @@ try
 
   $page;
 
-  if( isset($_REQUEST['action']) )
+  if( isset($_POST['action']) )
   {
-    $action = strtolower($_REQUEST['action']);
+    $action = strtolower($_POST['action']);
     $page = 'user_'.$action;
   }
-  else if( isset($_REQUEST['confirmed']) )
+  else if( isset($_POST['confirmed']) )
   {
-    if(isset($_REQUEST['cancel']))
+    if(isset($_POST['cancel']))
     {
       $page = 'user_id_prompt';
       unset($_SESSION['USER_ID']);
@@ -48,7 +48,7 @@ try
     }
     else
     {
-      $user_id = $_REQUEST['confirmed'];
+      $user_id = $_POST['confirmed'];
 
       if( ! db_userid_exists($user_id) ) 
       { 
@@ -74,9 +74,16 @@ try
     $tt_link_was_used = true;
     $page = 'user_verify';
   }
-  else if( isset($_REQUEST['submit_survey']) )
+  else if( isset($_POST['submit_survey']) )
   {
-    throw new Exception("Not yet implemented",404);
+    $user_id = $_POST['user_id'];
+
+    if( ! ( isset($_SESSION['USER_ID']) && $user_id === $_SESSION['USER_ID'] ) )
+    {
+      error_log("Attempt to submit survey with invalid or mismateched user ID: \n  POST=$user_id  SESSION=".$_SESSION['USER_ID']);
+      throw new Exception('Invalid user', 500);
+    }
+    $page = 'survey_submitted';
   }
   else if( isset($_SESSION['USER_ID']) )
   {

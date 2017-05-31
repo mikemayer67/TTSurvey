@@ -32,7 +32,7 @@ $user_email = $user_info['email'];
 <?=$tt_page_title?>
 
 <form class=tt-survey-form method=post data-ajax=false>
-<input type=hidden name=submit_survey value=<?=$user_id?> action='tt.php'>
+<input type=hidden name=user_id value='<?=$user_id?>'>
 
 <?php
 
