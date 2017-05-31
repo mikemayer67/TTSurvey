@@ -52,8 +52,7 @@ CREATE TABLE `participation_history` (
   `user_id` char(16) COLLATE utf8_unicode_ci NOT NULL,
   `year` smallint(6) NOT NULL,
   `submitted` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `user_id` (`user_id`,`year`),
+  PRIMARY KEY (`user_id`,`year`,`submitted`),
   CONSTRAINT `participation_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `participants` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -64,7 +63,7 @@ CREATE TABLE `participation_history` (
 
 LOCK TABLES `participation_history` WRITE;
 /*!40000 ALTER TABLE `participation_history` DISABLE KEYS */;
-INSERT INTO `participation_history` VALUES ('123-456-789-CAT',2017,0);
+INSERT INTO `participation_history` VALUES ('123-456-789-CAT',2017,1);
 /*!40000 ALTER TABLE `participation_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -95,6 +94,7 @@ CREATE TABLE `response_free_text` (
 
 LOCK TABLES `response_free_text` WRITE;
 /*!40000 ALTER TABLE `response_free_text` DISABLE KEYS */;
+INSERT INTO `response_free_text` VALUES ('123-456-789-CAT',2017,1,186,'mine'),('C72-53H-X1C-J81',2017,1,194,'anon2');
 /*!40000 ALTER TABLE `response_free_text` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,6 +124,7 @@ CREATE TABLE `response_group_comment` (
 
 LOCK TABLES `response_group_comment` WRITE;
 /*!40000 ALTER TABLE `response_group_comment` DISABLE KEYS */;
+INSERT INTO `response_group_comment` VALUES ('123-456-789-CAT',2017,1,2,'ok'),('123-456-789-CAT',2017,1,4,'wtf'),('123-456-789-CAT',2017,1,7,'x');
 /*!40000 ALTER TABLE `response_group_comment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -143,9 +144,9 @@ CREATE TABLE `response_role_options` (
   `selected` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`item_id`,`option_id`,`user_id`,`year`,`submitted`),
   KEY `item_id` (`item_id`,`user_id`,`year`),
-  KEY `user_id` (`user_id`,`year`,`item_id`,`submitted`),
+  KEY `response_role_options_ibfk_3` (`user_id`,`year`,`item_id`,`submitted`),
   CONSTRAINT `response_role_options_ibfk_2` FOREIGN KEY (`item_id`, `option_id`) REFERENCES `survey_role_options` (`item_id`, `option_id`) ON DELETE CASCADE,
-  CONSTRAINT `response_role_options_ibfk_3` FOREIGN KEY (`user_id`, `year`, `item_id`, `submitted`) REFERENCES `response_roles` (`user_id`, `year`, `item_id`, `submitted`) ON DELETE CASCADE
+  CONSTRAINT `response_role_options_ibfk_3` FOREIGN KEY (`user_id`, `year`, `item_id`, `submitted`) REFERENCES `response_roles` (`user_id`, `year`, `item_id`, `submitted`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -155,7 +156,7 @@ CREATE TABLE `response_role_options` (
 
 LOCK TABLES `response_role_options` WRITE;
 /*!40000 ALTER TABLE `response_role_options` DISABLE KEYS */;
-INSERT INTO `response_role_options` VALUES ('123-456-789-CAT',2017,0,30,1,0),('123-456-789-CAT',2017,0,30,2,1),('123-456-789-CAT',2017,0,31,1,1),('123-456-789-CAT',2017,0,31,2,1),('123-456-789-CAT',2017,0,34,2,0),('123-456-789-CAT',2017,0,49,1,0),('123-456-789-CAT',2017,0,49,2,0),('123-456-789-CAT',2017,0,49,4,0),('123-456-789-CAT',2017,0,49,5,1),('123-456-789-CAT',2017,0,57,1,0),('123-456-789-CAT',2017,0,57,2,0),('123-456-789-CAT',2017,0,57,3,0),('123-456-789-CAT',2017,0,63,1,0),('123-456-789-CAT',2017,0,64,1,1),('123-456-789-CAT',2017,0,64,2,1),('123-456-789-CAT',2017,0,68,1,1),('123-456-789-CAT',2017,0,68,3,1),('123-456-789-CAT',2017,0,68,4,0),('123-456-789-CAT',2017,0,68,5,1),('123-456-789-CAT',2017,0,87,1,0),('123-456-789-CAT',2017,0,87,5,1),('123-456-789-CAT',2017,0,87,7,1),('123-456-789-CAT',2017,0,87,8,1),('123-456-789-CAT',2017,0,105,1,0),('123-456-789-CAT',2017,0,108,1,1),('123-456-789-CAT',2017,0,124,1,1),('123-456-789-CAT',2017,0,124,7,1),('123-456-789-CAT',2017,0,124,8,1);
+INSERT INTO `response_role_options` VALUES ('123-456-789-CAT',2017,1,34,2,1),('123-456-789-CAT',2017,1,76,1,1);
 /*!40000 ALTER TABLE `response_role_options` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -187,7 +188,7 @@ CREATE TABLE `response_roles` (
 
 LOCK TABLES `response_roles` WRITE;
 /*!40000 ALTER TABLE `response_roles` DISABLE KEYS */;
-INSERT INTO `response_roles` VALUES ('123-456-789-CAT',2017,0,9,0,NULL),('123-456-789-CAT',2017,0,10,0,NULL),('123-456-789-CAT',2017,0,30,1,NULL),('123-456-789-CAT',2017,0,31,1,NULL),('123-456-789-CAT',2017,0,34,0,NULL),('123-456-789-CAT',2017,0,49,0,NULL),('123-456-789-CAT',2017,0,57,0,NULL),('123-456-789-CAT',2017,0,63,0,NULL),('123-456-789-CAT',2017,0,64,1,NULL),('123-456-789-CAT',2017,0,68,1,NULL),('123-456-789-CAT',2017,0,87,0,NULL),('123-456-789-CAT',2017,0,105,0,NULL),('123-456-789-CAT',2017,0,108,1,NULL),('123-456-789-CAT',2017,0,124,1,NULL);
+INSERT INTO `response_roles` VALUES ('123-456-789-CAT',2017,1,9,1,NULL),('123-456-789-CAT',2017,1,19,1,NULL),('123-456-789-CAT',2017,1,34,0,'alfasax'),('123-456-789-CAT',2017,1,76,0,NULL);
 /*!40000 ALTER TABLE `response_roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -413,7 +414,7 @@ CREATE TABLE `user_ids` (
 
 LOCK TABLES `user_ids` WRITE;
 /*!40000 ALTER TABLE `user_ids` DISABLE KEYS */;
-INSERT INTO `user_ids` VALUES ('123-456-789-cat');
+INSERT INTO `user_ids` VALUES ('123-456-789-cat'),('BJ3-H7B-576-533'),('C72-53H-X1C-J81'),('FM8-81B-TDL-46K');
 /*!40000 ALTER TABLE `user_ids` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -426,4 +427,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-30  8:49:47
+-- Dump completed on 2017-05-31 10:35:45

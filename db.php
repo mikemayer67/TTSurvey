@@ -32,9 +32,7 @@ function db_userid_exists($id,$db=null)
   }
 
   $sql = "select user_id from participants where user_id='$id'";
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 
   $n = $result->num_rows;
   $result->close();
@@ -55,9 +53,7 @@ function db_user_info($id)
     $id = strtoupper($id);
 
     $sql = "select name,email from participants where user_id='$id'";
-    $result = $db->query($sql);
-
-    if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+    $result = db_query($db,$sql);
 
     $n = $result->num_rows;
     if( $n == 1 ) 
@@ -126,9 +122,7 @@ function db_survey_groups($db,$year)
   $data = array();
 
   $sql = "select * from survey_groups where year=$year order by group_index";
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 
   while( $row = $result->fetch_assoc() )
   {
@@ -164,9 +158,7 @@ function db_survey_items($db,$year,$group)
 where si.year = $year
   and si.group_index = $group;";
 
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 
   while( $row = $result->fetch_assoc() )
   {
@@ -193,9 +185,7 @@ function db_role_options($db,$year)
                        and b.year = $year )
      order by item_id,option_id;";
 
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -223,9 +213,7 @@ function db_role_qualifiers($db,$year)
                      where a.item_id = b.item_id
                        and b.year = $year )";
 
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -250,9 +238,7 @@ function db_role_dependencies($db,$year)
                      where a.item_id = b.item_id
                        and b.year = $year ); ";
 
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -301,9 +287,7 @@ function db_clear($db,$year,$user_id,$submitted)
          and year=$year 
          and submitted=$submitted";
 
-    $result = $db->query($sql);
-
-    if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+    $result = db_query($db,$sql);
   }
 
 
@@ -318,7 +302,7 @@ function db_promote($db,$year,$user_id)
     'response_group_comment', 
     'response_free_text', 
     'response_roles',
-    'particpation_history' );
+    'participation_history' );
 
   foreach ( $tables as $table )
   {
@@ -328,9 +312,7 @@ function db_promote($db,$year,$user_id)
        where user_id='$user_id'
          and year=$year; ";
 
-    $result = $db->query($sql);
-
-    if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+    $result = db_query($db,$sql);
   }
 
 }
@@ -346,16 +328,14 @@ function db_update_role($db,$year,$user_id,$item_id,$value)
         on duplicate key update
            selected = $value;";
 
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 }
 
 function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value)
 {
   db_add_participation_history($db,$year,$user_id);
 
-  db_update_role($db,$year,$user_id,$item_id,$value);
+  db_update_role($db,$year,$user_id,$item_id,0);   // Danger <--- not sure if this will lead to MySQL integrity issue
 
   $sql = "
     insert into response_role_options
@@ -364,9 +344,7 @@ function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value)
         on duplicate key update
            selected = $value;";
 
-  $result = $db->query($sql);
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 }
 
 function db_update_group_comment($db,$year,$user_id,$group_index,$value)
@@ -386,8 +364,6 @@ function db_update_group_comment($db,$year,$user_id,$group_index,$value)
          and year=$year
          and submitted=0
          and group_index=$group_index;";
-
-    $result = $db->query($sql);
   }
   else
   {
@@ -397,11 +373,8 @@ function db_update_group_comment($db,$year,$user_id,$group_index,$value)
       values ('$user_id', $year, 0, $group_index, '$value')
           on duplicate key update
             text = '$value';";
-
-    $result = $db->query($sql);
   }
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 }
 
 function db_update_role_qualifier($db,$year,$user_id,$item_id,$value)
@@ -465,8 +438,6 @@ function db_update_freetext($db,$year,$user_id,$item_id,$value)
          and year=$year
          and submitted=0
          and item_id=$item_id;";
-
-    $result = $db->query($sql);
   }
   else
   {
@@ -476,10 +447,161 @@ function db_update_freetext($db,$year,$user_id,$item_id,$value)
       values ('$user_id', $year, 0, $item_id, '$value')
           on duplicate key update
              text = '$value';";
-
-    $result = $db->query($sql);
   }
-
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  $result = db_query($db,$sql);
 }
 
+
+function db_retrieve_data($db,$year,$user_id)
+{
+  $data = array();
+
+  if( isset( $_SESSION['ANON_ID'] ) )
+  {
+    $data = db_retrieve_data_for_user($db,$year,$_SESSION['ANON_ID'],1);
+
+    foreach ($data as $key=>$value)
+    {
+      $data["anon_$key"] = 1;
+    }
+  }
+
+  $has_working_copy = db_create_working_copy($db,$year,$user_id);
+
+  if( $has_working_copy )
+  {
+    $user_data = db_retrieve_data_for_user($db,$year,$user_id,0);
+    $data = array_merge($data, $user_data);
+  }
+
+  return $data;
+}
+
+function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
+{
+  $data = array();
+
+  $sql = "
+    select item_id, text 
+      from response_free_text 
+     where user_id='$user_id'
+       and year=$year
+       and submitted=$submitted";
+
+  $result = db_query($db,$sql);
+
+  while( $row = $result->fetch_row() )
+  {
+    $data["freetext_$row[0]"] = $row[1];
+  }
+
+  $sql = "
+    select group_index, text 
+      from response_group_comment
+     where user_id='$user_id'
+       and year=$year
+       and submitted=$submitted";
+
+  $result = db_query($db,$sql);
+
+  while( $row = $result->fetch_row() )
+  {
+    $data["comment_$row[0]"] = $row[1];
+  }
+
+  $sql = "
+    select item_id, selected
+      from response_roles
+     where user_id='$user_id'
+       and year=$year
+       and submitted=$submitted";
+
+  $result = db_query($db,$sql);
+
+  while( $row = $result->fetch_row() )
+  {
+    $data["item_$row[0]"] = $row[1];
+  }
+
+  $sql = "
+    select item_id, qualifier
+      from response_roles
+     where user_id='$user_id'
+       and year=$year
+       and submitted=$submitted";
+
+  $result = db_query($db,$sql);
+
+  while( $row = $result->fetch_row() )
+  {
+    if( ! is_null($row[1]) )
+    {
+      $data["qual_$row[0]"] = $row[1];
+    }
+  }
+
+  $sql = "
+    select item_id, option_id, selected
+      from response_role_options
+     where user_id='$user_id'
+       and year=$year
+       and submitted=$submitted";
+
+  $result = db_query($db,$sql);
+
+  while( $row = $result->fetch_row() )
+  {
+    $data['item_'.$row[0]."_$row[1]"] = $row[2];
+  }
+
+  return $data;
+}
+
+function db_create_working_copy($db,$year,$user_id)
+{
+  $result = db_query($db,"select submitted from participation_history where year=$year and user_id='$user_id'");
+
+  $n = $result->num_rows;
+  if($n>1) { return true; }
+  if($n<1) { return false; }
+
+  $row = $result->fetch_row();
+  if($row[0] == 0) { return true; }
+
+  $tables = array(
+    'response_group_comment',
+    'response_free_text',
+    'response_roles',
+    'response_role_options', 
+    'participation_history' );
+
+  $columns = array(
+    'response_group_comment' => 'user_id, year, 0, group_index, text', 
+    'response_free_text'     => 'user_id, year, 0, item_id, text', 
+    'response_roles'         => 'user_id, year, 0, item_id, selected, qualifier', 
+    'response_role_options'  => 'user_id, year, 0, item_id, option_id, selected', 
+    'participation_history'  => 'user_id, year, 0');
+
+  foreach ($tables as $table)
+  {
+    $col = $columns[$table];
+    $sql = "
+      insert into $table 
+      select $col
+        from $table 
+       where year=$year 
+         and user_id='$user_id'
+         and submitted=1 ;";
+
+    db_query($db,$sql);
+  }
+
+  return true;
+}
+
+function db_query($db,$sql)
+{
+  $result = $db->query($sql);
+  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  return $result;
+}

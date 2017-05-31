@@ -188,20 +188,16 @@ div.tt-non-collapsible
 {
 }
 
-div.tt-role-bool
-{
-  margin-left: 1em;
-}
-
-span.tt-role-bool-label
-{
-  margin-left: 10px;
-}
-
 span.tt-role-option
 {
   white-space: nowrap;
   margin-right: 1em;
+}
+
+span.tt-role-bool
+{
+  white-space: nowrap;
+  margin-left: 2em;
 }
 
 input[disabled]+label,
@@ -214,6 +210,12 @@ input:disabled+label
 label.tt-role-option
 {
   display:inline;
+}
+
+label.tt-role-bool
+{
+  display:inline;
+  margin-left: 0.5em;
 }
 
 div.tt-role-secondary-options

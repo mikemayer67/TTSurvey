@@ -45,6 +45,8 @@ try
   $qualifiers   = db_role_qualifiers($db,$tt_year);
   $dependencies = db_role_dependencies($db,$tt_year);
 
+  $saved_data = db_retrieve_data($db,$tt_year,$user_id);
+
   foreach ( $groups as $group )
   {
     $in_list = false;
@@ -149,6 +151,10 @@ try
                   $qual_tag  = "qual_$item_id";
                   print " data-tt-qual='#$qual_tag'";
                 }
+                if( isset($saved_data[$opt_tag]) && $saved_data[$opt_tag] ) 
+                { 
+                  print " checked";
+                }
                 print ">";
                 print "<label class='tt-role-option' for=$opt_tag>$opt_label</label>";
                 print "</input></span>\n";
@@ -161,7 +167,12 @@ try
           if( $has_qual )
           {
             print "<div class=tt-qualification-text>";
-            print "<textarea id='$qual_tag' class='tt-qualtext' name='$qual_tag' placeholder='$qual_hint'></textarea>";
+            print "<textarea id='$qual_tag' class='tt-qualtext' name='$qual_tag' placeholder='$qual_hint'>";
+            if( isset($saved_data[$qual_tag]) )
+            {
+              print $saved_data[$qual_tag];
+            }
+            print "</textarea>";
             print "</div>";
           }
 
@@ -171,10 +182,12 @@ try
         {
           $tag = "item_$item_id";
           print "<div class='tt-role-bool'>";
-          print "<input id='$tag' type='checkbox' name='$tag' data-role=none class='tt-role-bool'>";
-          print "<span class='tt-role-bool-label'>$label</span>";
-          print "</input>";
-          print "</div>\n";
+          print "<span class='tt-role-bool'>";
+          print "<input id='$tag' type='checkbox' name='$tag' data-role=none class='tt-role-bool'";
+          if( isset($saved_data[$tag]) && $saved_data[$tag] ) { print " checked"; }
+          print ">";
+          print "<label class='tt-role-bool' for='$tag'>$label</label>";
+          print "</input></span></div>\n";
         }
 
         break;
@@ -191,11 +204,20 @@ try
         {
           $anon_tag = "anon_$tag";
           print "<span class=tt-free-text-anon>";
-          print "<input id='$anon_tag' type='checkbox' name='$anon_tag' data-role=none>anonymous</input>";
+          print "<input id='$anon_tag' type='checkbox' name='$anon_tag' data-role=none";
+          if( isset($saved_data[$anon_tag]) && $saved_data[$anon_tag] )
+          {
+            print " checked";
+          }
+          print ">anonymous</input>";
           print "</span>\n";
         }
         print "</div>\n";
         print "<textarea id='$tag' class='tt-free-text' name='$tag'>\n";
+        if( isset($saved_data[$tag]) )
+        {
+          print $saved_data[$tag];
+        }
         print "</textarea>";
         print "</div>\n";
 
@@ -219,6 +241,10 @@ try
       print "<div><span class='tt-comment-label'>$label</span>\n";
       print "</div>\n";
       print "<textarea id='$tag' class='tt-comment' name='$tag'>\n";
+        if( isset($saved_data[$tag]) )
+        {
+          print $saved_data[$tag];
+        }
       print "</textarea>";
       print "</div>\n";
     }
