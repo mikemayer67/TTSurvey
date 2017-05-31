@@ -520,7 +520,7 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
 
   while( $row = $result->fetch_row() )
   {
-    $data["item_$row[0]"] = $row[1];
+    $data["item_$row[0]"] = (int)($row[1]);
   }
 
   $sql = "
@@ -551,7 +551,7 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
 
   while( $row = $result->fetch_row() )
   {
-    $data['item_'.$row[0]."_$row[1]"] = $row[2];
+    $data['item_'.$row[0]."_$row[1]"] = (int)($row[2]);
   }
 
   return $data;
@@ -599,9 +599,19 @@ function db_create_working_copy($db,$year,$user_id)
   return true;
 }
 
+function db_can_revert($db,$year,$user_id)
+{
+  $result = db_query($db,"select submitted from participation_history where year=$year and user_id='$user_id' and submitted=1");
+
+  $n = $result->num_rows;
+  return $n>0;
+}
+
+
 function db_query($db,$sql)
 {
   $result = $db->query($sql);
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
   return $result;
 }
+

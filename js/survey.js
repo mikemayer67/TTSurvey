@@ -11,6 +11,7 @@ $(function() {
   stop_user_email_edit();
 
   $('#tt_user_uid button').on('click',logout_user);
+  $('#tt_reload button').on('click',reload_data);
 
   user_name  = $('#tt_user_name span').text(); 
   user_email = $('#tt_user_email span').text(); 
@@ -257,3 +258,29 @@ function submit_text_item()
     } );
   }
 }
+
+function reload_data()
+{
+  $.ajax( {
+    type: 'POST',
+    url:  'ajax_reload_data.php',
+    data: {}
+  } )
+  .done( function(data) {
+    $('textarea').val('');
+    $('input:checkbox').prop('checked',false);
+    $.each(data, function(index,value) {
+      if(/^(anon|item)/.test(index)) {
+        tag = "#"+index;
+        $(tag).prop('checked',(value?true:false));
+      }
+      else if( /^(comment|free|qual)/.test(index) ) {
+        tag = "#"+index;
+        $(tag).val(value);
+      }
+
+    })
+  });
+
+}
+

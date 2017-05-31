@@ -8,6 +8,10 @@ $user_uid = $_SESSION['USER_ID'];
 $user_info = db_user_info($user_uid);
 $user_name = $user_info['name'];
 $user_email = $user_info['email'];
+
+try
+{
+  $db = db_connect();
 ?>
 
 <script src="js/survey.js?v=<?=rand()?>"></script>
@@ -19,6 +23,11 @@ $user_email = $user_info['email'];
 <div id=tt_survey_header class=tt-header>
 <span id=tt_user_uid class=tt-user-info>User ID: <span><?=$user_uid?></span>
   <button data-role='none'>logout</button></span>
+
+<?php if( db_can_revert($db,$tt_year,$user_id) ) { ?>
+<span id=tt_reload class=tt-user-info>Found Submitted Responses: <button data-role=none>Reload</button></span>
+<?php } ?>
+
 <span id=tt_user_name class=tt-user-info>Name: <span><?=$user_name?></span>
   <input data-role='none' placeholder='Name...' style='display:none;'></input>
   <button data-role='none'>fix</button></span>
@@ -35,11 +44,6 @@ $user_email = $user_info['email'];
 <input type=hidden name=user_id value='<?=$user_id?>'>
 
 <?php
-
-try
-{
-  $db = db_connect();
-
   $groups       = db_survey_groups($db,$tt_year);
   $options      = db_role_options($db,$tt_year);
   $qualifiers   = db_role_qualifiers($db,$tt_year);
