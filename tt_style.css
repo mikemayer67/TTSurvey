@@ -83,6 +83,27 @@ br.nospace
   margin: 0 0;
 }
 
+.tt-indent
+{
+  margin-left: 1em;
+}
+
+.tt-note
+{
+  font-style:italic;
+}
+
+div.tt-nospace > p:not(:first-child)
+{
+  margin-top: 0;
+}
+
+div.tt-nospace > p:not(:last-child)
+{
+  margin-bottom: 0;
+}
+
+
 div.tt-noscript
 {
   font-family: sans-serif;
@@ -110,6 +131,11 @@ p.tt-noscript
     width:100%;
     overflow: auto;
   }
+  div.tt-body-div
+  {
+    margin-left: 0.5em;
+  }
+
 }
 @media screen and (min-width:600px)
 {
@@ -126,6 +152,10 @@ p.tt-noscript
   .tt-title
   {
     margin-top: 2em;
+  }
+  div.tt-body-div
+  {
+    margin-left: 2em;
   }
 }
 

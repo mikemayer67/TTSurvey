@@ -472,6 +472,10 @@ function db_retrieve_data($db,$year,$user_id)
   {
     $user_data = db_retrieve_data_for_user($db,$year,$user_id,0);
     $data = array_merge($data, $user_data);
+    foreach ( $user_data as $key=>$index )
+    {
+      unset( $data['anon_'.$key] );
+    }
   }
 
   return $data;
