@@ -1,12 +1,11 @@
 <?php
 session_start();
+
+require_once(dirname(__FILE__).'/tt_init.php');
+
 unset($_SESSION['USER_ID']);
 unset($_SESSION['ANON_ID']);
 setcookie('_tt_uid', '', 0, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
 
-$host = $_SERVER['SERVER_NAME'];
-$uri = $_SERVER['REQUEST_URI'];
-$uri = str_replace('_logout','',$uri);
-
-header("Location: http://$host$uri");
+header("Location: $tt_root_url/tt.php");
 ?>

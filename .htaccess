@@ -9,3 +9,4 @@ RewriteRule . /stewardship/404.php [L]
 
 AddHandler application/x-httpd-php56 .php
 
+DirectoryIndex index.php index.html

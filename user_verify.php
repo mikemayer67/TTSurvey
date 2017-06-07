@@ -11,7 +11,6 @@ $data = db_user_info($user_id);
 
 if( count($data) == 0 )
 {
-  $tt_error = "---";
   if( isset($tt_link_was_used) && $tt_link_was_used )
   {
     $tt_error = 'Invalid User ID in the URL request';

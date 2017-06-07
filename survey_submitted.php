@@ -40,6 +40,7 @@ foreach ( $_POST as $key => $value )
       db_update_role($db,$tt_year,$user_id,$keys[1], 1);
       break;
     case 3:
+      error_log("$user_id: $keys[1], $keys[2], 1");
       db_update_role_option($db,$tt_year,$user_id,$keys[1], $keys[2], 1);
       break;
 
@@ -90,14 +91,9 @@ $user_info = db_user_info($user_uid);
 $user_name = $user_info['name'];
 $user_email = $user_info['email'];
 
-$host = $_SERVER['SERVER_NAME'];
-$tt_uri = $_SERVER['REQUEST_URI'];
-$ctsuri = str_replace('tt.php','img/cts_logo.png',$tt_uri);
+$link1  = "$tt_root_url/tt.php?uid=$user_uid";
+$ctslnk = "$tt_root_url/img/cts_logo.png";
 
-$link1 = "http://$host$tt_uri?uid=$user_uid";
-$ctslnk = "http://$host$ctsuri";
-
-error_log("$host\n$tt_uri\n$ctsuri\n$link1\n$ctslnk\n");
 if(isset($_SESSION['ANON_ID']))
 {
   $link2 = $link1.'&aid='.$_SESSION['ANON_ID'];
@@ -140,6 +136,7 @@ if(isset($user_email)) { ?>
   <p>A copy of this information has also been sent to the email address you provided: <strong><?=$user_email?></strong></p>
 <?php
 
+  if( ! isset($link2) ) { $link2 = null; }
   email_submission_feedback($user_uid,$user_email, $tt_title, $tt_poc, $tt_poc_email, $ctslnk, $link1, $link2);
 } ?>
 

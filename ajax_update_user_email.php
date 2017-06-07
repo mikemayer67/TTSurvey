@@ -4,7 +4,7 @@ session_start();
 
 $dir = dirname(__FILE__);
 
-require_once("$dir/db.php");
+require_once("$dir/tt_init.php");
 require_once("$dir/sendmail.php");
 
 try

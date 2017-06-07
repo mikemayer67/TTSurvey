@@ -389,7 +389,8 @@ function db_update_role_qualifier($db,$year,$user_id,$item_id,$value)
   if( strlen($value) == 0 )
   {
     $sql = "
-      delete from response_roles 
+      update response_roles 
+         set qualifier = null
        where user_id='$user_id'
          and year=$year
          and submitted=0
@@ -614,8 +615,158 @@ function db_can_revert($db,$year,$user_id)
 
 function db_query($db,$sql)
 {
+  error_log("\n$sql\n");
   $result = $db->query($sql);
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
   return $result;
 }
 
+function db_all_results($db,$year)
+{
+  $result = db_query($db,"select group_index, label from survey_groups where year=$year");
+
+  // structure
+
+  $groups = array();
+  while($row = $result->fetch_row())
+  {
+    list($group_index,$label) = $row;
+    $groups[$group_index] = array('label'=>$label);
+  }
+  $result->close();
+
+  $result = db_query($db, "
+    select   item_id, group_index, coalesce(summary_label,label) 
+    from     survey_items
+    where    year=$year
+    and      item_type='role'
+    order by group_index,order_index; ");
+  
+  $roles = array();
+  while($row = $result->fetch_row())
+  {
+    list($item_id,$group_index,$label) = $row;
+    $groups[$group_index]['roles'][] = $item_id;
+    $roles[$item_id] = array( 'label'=>$label );
+  }
+  $result->close();
+
+  $result = db_query($db,"
+    select   a.item_id, a.option_id, a.option_label
+    from     survey_role_options a, survey_items b
+    where    a.item_id = b.item_id
+    and      b.year=$year" );
+
+  while($row = $result->fetch_row())
+  {
+    list($item_id,$option_id,$label) = $row;
+    $roles[$item_id]['options'][$option_id] = $label;
+  }
+
+  $result = db_query($db,"
+    select   item_id, group_index, coalesce(summary_label,label) 
+    from     survey_items
+    where    year=$year
+    and      item_type='free_text'
+    order by group_index,order_index; ");
+  
+  $free_text = array();
+  while($row = $result->fetch_row())
+  {
+    list($item_id,$group_index,$label) = $row;
+    $groups[$group_index]['free_text'][] = $item_id;
+    $free_text[$item_id] = $label;
+  }
+  $result->close();
+
+  // responses
+  
+  $result = db_query($db,"
+  select    a.name,
+            b.item_id,
+            b.selected,
+            c.option_id,
+            b.qualifier
+  from      participants a, 
+            response_roles b 
+  left join response_role_options c 
+  on        (c.item_id=b.item_id and c.user_id=b.user_id and c.year=b.year)
+  where     b.year=$year
+  and       a.user_id=b.user_id
+  and       b.submitted=1
+  and       ( c.selected = 1 or c.selected is null ); " );
+
+  $response_summary = array();
+  while($row = $result->fetch_row())
+  {
+    list($name,$item_id,$selected,$option_id,$qualifier) = $row;
+
+    if(is_null($option_id)) 
+    {
+      if($selected) 
+      {
+        $response_summary[$item_id][$name]['selected'] = 1;
+        if( ! is_null($qualifier) ) 
+        {
+          $response_summary[$item_id][$name]['qualifier'] = $qualifier;
+        }
+      }
+    }
+    else 
+    {
+      $response_summary[$item_id][$name]['options'][$option_id] = 1;
+      if( ! is_null($qualifier) )
+      {
+        $response_summary[$item_id][$name]['qualifier'] = $qualifier;
+      }
+    }
+  }
+  $result->close();
+
+  $result = db_query($db,"
+  select    a.name,
+            b.group_index,
+            b.text
+  from      participants a, 
+            response_group_comment b 
+  where     b.year=$year
+  and       a.user_id=b.user_id
+  and       b.submitted=1
+  and       b.text is not null;" );
+
+  $comment_summary = array();
+  while($row = $result->fetch_row())
+  {
+    list($name,$group_index,$text) = $row;
+    $comment_summary[$group_index][$name] = $text;
+  }
+  $result->close();
+
+
+  $result = db_query($db,"
+  select    a.name,
+            b.item_id,
+            b.text
+  from      participants a, 
+            response_free_text b 
+  where     b.year=$year
+  and       a.user_id=b.user_id
+  and       b.submitted=1
+  and       b.text is not null;" );
+
+  while($row = $result->fetch_row())
+  {
+    list($name,$item_id,$text) = $row;
+    $response_summary[$item_id][$name] = $text;
+  }
+  $result->close();
+
+  $data = array( 'groups'           => $groups,
+                 'roles'            => $roles,
+                 'free_text'        => $free_text,
+                 'response_summary' => $response_summary,
+                 'comment_summary'  => $comment_summary,
+               );
+
+  return $data;
+}

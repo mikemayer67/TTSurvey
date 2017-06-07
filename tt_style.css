@@ -15,6 +15,7 @@ h3.tt-error,
 h4.tt-error
 {
   color:red;
+  font-size: medium;
 }
 
 .tt-form-instruction 
@@ -402,4 +403,103 @@ textarea.tt-comment
 {
   margin-left: 4em;
   margin-right: 8em;
+}
+
+div.ttr-role-label
+{
+  font-weight: bold;
+  text-align: left;
+  text-decoration: underline;
+  margin-top: 1em;
+}
+
+div.ttr-usernames
+{
+  margin-left: 1em;
+}
+
+span.ttr-username
+{
+  padding-right: 1em;
+  width: 10em;
+  display: inline-block;
+}
+
+table.ttr-role-options
+{
+  border-spacing: 0px;
+  padding:5px;
+  margin-top:1em;
+}
+
+th.ttr-role-label
+{
+  text-decoration: underline;
+  text-align: left;
+}
+
+th.ttr-role-option-label
+{
+  text-align: center;
+  padding-left: 1em;
+  padding-right: 1em;
+  border-bottom: 1px solid #808080;
+}
+
+td.ttr-username
+{
+  text-align: right;
+  border-right: 1px solid #c0c0c0;
+  padding-left: 1em;
+  padding-right: 0.5em;
+}
+
+td.ttr-role-cell
+{
+  text-align: center;
+  border-bottom: 1px solid #808080;
+  border-right: 1px solid #c0c0c0;
+}
+
+td.ttr-qualifier
+{
+  font-style: italic;
+  padding-left: 1em;
+  font-size: small;
+}
+
+table.ttr-comments
+{
+  border-spacing: 0px;
+  padding:5px;
+  margin-left:1em;
+}
+
+td.ttr-comment-username
+{
+  text-align: right;
+  padding-right: 1em;
+}
+
+tr.ttr-user-comment:first-child td
+{
+  border-top: 1px solid #808080;
+}
+
+tr.ttr-user-comment td
+{
+  border-bottom: 1px solid #808080;
+}
+
+td.ttr-comment
+{
+  text-align: left;
+  border-left: 1px solid #e0e0e0;
+  padding-left: 1em;
+}
+
+div.ttr-no-response
+{
+  font-style: italic;
+  margin-left: 1em;
 }

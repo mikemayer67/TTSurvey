@@ -12,10 +12,7 @@ if( db_userid_exists($user_id) )
   $_SESSION['USER_ID'] = $user_id;
   setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
 
-  $host = $_SERVER['SERVER_NAME'];
-  $uri  = $_SERVER['REQUEST_URI'];
-
-  header("Location: http://$host$uri");
+  header("Location: $tt_root_url/tt.php");
 }
 else
 {

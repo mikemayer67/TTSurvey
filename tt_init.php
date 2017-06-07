@@ -14,4 +14,11 @@ $tt_page_title = "<h1 class='tt-title'><img src='img/cts_logo.png' height=50>$tt
 
 require_once(dirname(__FILE__).'/db.php');
 
+$tt_root_url = 'http://'.$_SERVER['SERVER_NAME'];
+if( ! preg_match('/stewardship/',$tt_root_url) )
+{
+  $tt_root_url .= '/stewardship';
+}
+$tt_root_url = preg_replace('/\/$/','',$tt_root_url);
+
 ?>

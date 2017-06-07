@@ -2,6 +2,8 @@
 
 function email_account_info($uid,$name,$email,$aid)
 {
+  global $tt_root_url;
+
   if( isset($email) && strlen($email)>0 )
   {
     $to = $email;
@@ -10,8 +12,7 @@ function email_account_info($uid,$name,$email,$aid)
     $query = "uid=$uid";
     if( isset($aid) && strlen($aid)>0 ) { $query .= "&amp;aid=$aid"; }
 
-    $host = $_SERVER['SERVER_NAME'];
-    $url  = "http://$host/stewardship/tt.php?$query";
+    $url = "$tt_root_url/tt.php?$query";
 
     $message = "
       <html>
