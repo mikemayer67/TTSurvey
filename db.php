@@ -760,11 +760,28 @@ function db_all_results($db,$year)
   }
   $result->close();
 
-  $data = array( 'groups'           => $groups,
-                 'roles'            => $roles,
-                 'free_text'        => $free_text,
-                 'response_summary' => $response_summary,
-                 'comment_summary'  => $comment_summary,
+  $result = db_query($db,"
+  select    b.item_id,
+            b.text
+  from      response_free_text b 
+  where     b.year=$year
+  and       not exists ( select * from participants a where a.user_id=b.user_id )
+  and       b.submitted=1
+  and       b.text is not null;" );
+
+  while($row = $result->fetch_row())
+  {
+    list($item_id,$text) = $row;
+    $anonymous_summary[$item_id][] = $text;
+  }
+  $result->close();
+
+  $data = array( 'groups'            => $groups,
+                 'roles'             => $roles,
+                 'free_text'         => $free_text,
+                 'response_summary'  => $response_summary,
+                 'comment_summary'   => $comment_summary,
+                 'anonymous_summary' => $anonymous_summary,
                );
 
   return $data;

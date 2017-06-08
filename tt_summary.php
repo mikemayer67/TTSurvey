@@ -32,9 +32,9 @@ $data = db_all_results($db,$tt_year);
 <?php
   foreach ( $data['groups'] as $group_id => $group ) {
     if( isset( $group['roles'] ) ) {
-      print "<div data-role=collapsibleset>\n" ;
+      print "<div data-role=collapsibleset>\n";
       print "<div class=tt-collapsible-group data-role=collapsible>\n";
-      print "<h3 id='group_$group_id'>".$group['label']."</h3>\n";
+      print "<h3>".$group['label']."</h3>\n";
       foreach ( $group['roles'] as $item_id ) { 
         $role = $data['roles'][$item_id];
         $role_label = $role['label'];
@@ -141,6 +141,66 @@ $data = db_all_results($db,$tt_year);
 
   <div data-role=collapsible>
     <h2 id=summary_by_group>Summary of Open Responses by Worship Area</h2>
+    <div class=ttr-buttons>
+      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
+      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
+    </div>
+<?php
+  foreach ( $data['groups'] as $group_id => $group ) {
+    if( isset( $group['free_text'] ) ) {
+      print "<div data-role=collapsibleset>\n";
+      print "<div class=tt-collapsible-group data-role=collapsible>\n";
+      print "<h3>".$group['label']."</h3>\n";
+      foreach ( $group['free_text'] as $item_id ) { 
+        $free_text_label = $data['free_text'][$item_id];
+        $has_names = isset($data['response_summary']);
+        $has_anon  = isset($data['anonymous_summary']);
+        if( $has_names || $has_anon )
+        {
+          print "<table class=ttr-comments data-role=none>\n";
+          if($has_names)
+          {
+            $responses = $data['response_summary'][$item_id];
+
+            $names = array_keys($responses);
+            usort($names,'lastNameSort');
+
+            foreach ($names as $name)
+            {
+              $response = $responses[$name];
+              print "<tr class=ttr-user-comment>\n";
+              print "<td class=ttr-comment-username>$name</td>";
+              print "<td class=ttr-comment>$response</td>";
+              print "</tr>\n";
+            }
+          }
+          if($has_anon)
+          {
+            $responses = $data['anonymous_summary'][$item_id];
+
+            foreach ($responses  as $response)
+            {
+              print "<tr class=ttr-user-comment>\n";
+              print "<td/><td class=ttr-comment>$response</td>";
+              print "</tr>\n";
+            }
+          }
+          print "</table>\n";
+        }
+        else
+        {
+          print "<div class=ttr-role-label>$free_text_label</div>\n";
+          print "<div class=ttr-no-response>(no responses)</div>\n";
+        }
+      }
+      print "</div></div>\n";  // group collapsible, group collapsibleset
+    }
+  }
+?>
+    <div class=ttr-buttons>
+      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
+      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
+    </div>
   </div>
 
   <div data-role=collapsible>

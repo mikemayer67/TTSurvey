@@ -486,6 +486,8 @@ td.ttr-comment-username
 {
   text-align: right;
   padding-right: 1em;
+  width: 10em;
+  vertical-align:top;
 }
 
 tr.ttr-user-comment:first-child td
