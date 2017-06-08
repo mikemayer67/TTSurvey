@@ -7,15 +7,6 @@ $tt_delog = 0;
 require_once("$dir/tt_init.php");
 require_once("$dir/sendmail.php");
 
-if( isset( $_SESSION['USER_ID'] ) )
-{
-  error_log("tt_root_url(".$_SESSION['USER_ID']."): $tt_root_url");
-}
-else
-{
-  error_log("tt_root_url(anon): $tt_root_url");
-}
-
 try
 {
   if( $tt_delog > 0 )

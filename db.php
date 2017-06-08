@@ -615,7 +615,6 @@ function db_can_revert($db,$year,$user_id)
 
 function db_query($db,$sql)
 {
-  error_log("\n$sql\n");
   $result = $db->query($sql);
   if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
   return $result;

@@ -40,7 +40,6 @@ foreach ( $_POST as $key => $value )
       db_update_role($db,$tt_year,$user_id,$keys[1], 1);
       break;
     case 3:
-      error_log("$user_id: $keys[1], $keys[2], 1");
       db_update_role_option($db,$tt_year,$user_id,$keys[1], $keys[2], 1);
       break;
 

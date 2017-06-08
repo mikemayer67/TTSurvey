@@ -1,8 +1,6 @@
 <?php
 
 $dir = dirname(__FILE__);
-error_log($dir);
-
 require_once("$dir/tt_init.php");
 
 $title = $tt_title;
@@ -16,6 +14,9 @@ $data = db_all_results($db,$tt_year);
 <html>
 <head>
 <?php require("$dir/tt_head.php"); ?>
+
+<script src="js/tt_summary.js?v=<?=rand()?>"></script>
+
 </head>
 
 <body>
@@ -24,11 +25,15 @@ $data = db_all_results($db,$tt_year);
 <div data-role=collapsibleset>
   <div data-role=collapsible>
     <h2 id=summary_by_group>Summary by Ministry Area</h2>
+    <div class=ttr-buttons>
+      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
+      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
+    </div>
 <?php
   foreach ( $data['groups'] as $group_id => $group ) {
     if( isset( $group['roles'] ) ) {
       print "<div data-role=collapsibleset>\n" ;
-      print "<div data-role=collapsible>\n";
+      print "<div class=tt-collapsible-group data-role=collapsible>\n";
       print "<h3 id='group_$group_id'>".$group['label']."</h3>\n";
       foreach ( $group['roles'] as $item_id ) { 
         $role = $data['roles'][$item_id];
@@ -42,6 +47,7 @@ $data = db_all_results($db,$tt_year);
 
           if( isset($role['options']) )
           {
+            print "<div class=ttr-table-block>";
             print "<table class=ttr-role-options data-role=none>\n";
             print "<tr class=ttr-role-options-header data-role=none>\n";
             print "<th class=ttr-role-label>$role_label</th>\n";
@@ -78,7 +84,7 @@ $data = db_all_results($db,$tt_year);
               print "</tr>\n";
             }
 
-            print "</table>\n";
+            print "</table></div>\n";
           }
           else
           {
@@ -94,8 +100,10 @@ $data = db_all_results($db,$tt_year);
         }
         else
         {
+          print "<div class=ttr-table-block>\n";
           print "<div class=ttr-role-label>$role_label</div>\n";
           print "<div class=ttr-no-response>(no responses)</div>\n";
+          print "</div>\n";
         }
       }
       
@@ -124,6 +132,11 @@ $data = db_all_results($db,$tt_year);
     }
   }
 ?>
+    <div class=ttr-buttons>
+      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
+      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
+    </div>
+
   </div>
 
   <div data-role=collapsible>

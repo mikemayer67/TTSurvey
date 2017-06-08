@@ -425,6 +425,13 @@ span.ttr-username
   display: inline-block;
 }
 
+div.ttr-table-block
+{
+  display: inline-block;
+  vertical-align: top;
+  margin: 1em 1em;
+}
+
 table.ttr-role-options
 {
   border-spacing: 0px;
@@ -502,4 +509,18 @@ div.ttr-no-response
 {
   font-style: italic;
   margin-left: 1em;
+}
+
+div.ttr-buttons
+{
+  overflow: hidden;
+}
+
+div.ttr-buttons button
+{
+  float: right;
+  padding-top:0;
+  padding-bottom:0;
+  margin-top:0;
+  margin-bottom:0;
 }
