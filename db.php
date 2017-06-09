@@ -634,6 +634,8 @@ function db_all_results($db,$year)
   }
   $result->close();
 
+  $group_xref = array();
+
   $result = db_query($db, "
     select   item_id, group_index, coalesce(summary_label,label) 
     from     survey_items
@@ -647,6 +649,7 @@ function db_all_results($db,$year)
     list($item_id,$group_index,$label) = $row;
     $groups[$group_index]['roles'][] = $item_id;
     $roles[$item_id] = array( 'label'=>$label );
+    $group_xref[$item_id] = $group_index;
   }
   $result->close();
 
@@ -675,6 +678,7 @@ function db_all_results($db,$year)
     list($item_id,$group_index,$label) = $row;
     $groups[$group_index]['free_text'][] = $item_id;
     $free_text[$item_id] = $label;
+    $group_xref[$item_id] = $group_index;
   }
   $result->close();
 
@@ -696,27 +700,34 @@ function db_all_results($db,$year)
   and       ( c.selected = 1 or c.selected is null ); " );
 
   $response_summary = array();
+  $user_responses = array();
+
   while($row = $result->fetch_row())
   {
     list($name,$item_id,$selected,$option_id,$qualifier) = $row;
+    $group_index = $group_xref[$item_id];
 
     if(is_null($option_id)) 
     {
       if($selected) 
       {
         $response_summary[$item_id][$name]['selected'] = 1;
+        $user_responses[$name][$group_index]['roles'][$item_id]['selected'] = 1;
         if( ! is_null($qualifier) ) 
         {
           $response_summary[$item_id][$name]['qualifier'] = $qualifier;
+          $user_responses[$name][$group_index]['qualifiers'][$item_id] = $qualifier;
         }
       }
     }
     else 
     {
       $response_summary[$item_id][$name]['options'][$option_id] = 1;
+      $user_responses[$name][$group_index]['roles'][$item_id]['options'][$option_id] = 1;
       if( ! is_null($qualifier) )
       {
         $response_summary[$item_id][$name]['qualifier'] = $qualifier;
+        $user_responses[$name][$group_index]['qualifiers'][$item_id] = $qualifier;
       }
     }
   }
@@ -738,6 +749,7 @@ function db_all_results($db,$year)
   {
     list($name,$group_index,$text) = $row;
     $comment_summary[$group_index][$name] = $text;
+    $user_responses[$name][$group_index]['comment'] = $text;
   }
   $result->close();
 
@@ -756,7 +768,9 @@ function db_all_results($db,$year)
   while($row = $result->fetch_row())
   {
     list($name,$item_id,$text) = $row;
+    $group_index = $group_xref[$item_id];
     $response_summary[$item_id][$name] = $text;
+    $user_responses[$name][$group_index]['free_text'][$item_id] = $text;
   }
   $result->close();
 
@@ -782,6 +796,7 @@ function db_all_results($db,$year)
                  'response_summary'  => $response_summary,
                  'comment_summary'   => $comment_summary,
                  'anonymous_summary' => $anonymous_summary,
+                 'user_responses'    => $user_responses,
                );
 
   return $data;
