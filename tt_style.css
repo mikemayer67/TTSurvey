@@ -405,6 +405,11 @@ textarea.tt-comment
   margin-right: 8em;
 }
 
+body.ttr
+{
+  font-size: 90%;
+}
+
 div.ttr-role-label
 {
   font-weight: bold;
@@ -525,4 +530,57 @@ div.ttr-buttons button
   padding-bottom:0;
   margin-top:0;
   margin-bottom:0;
+}
+
+table.ttr-user-group
+{
+  border-spacing:0;
+  padding:5px;
+  margin-left:1em;
+}
+
+div th.ttr-user-group-label
+{
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1em;
+  border-bottom: 1px solid black;
+}
+
+div td.ttr-user-response
+{
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  border-bottom: 1px solid black;
+}
+
+div td.ttr-user-option
+{
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  border-left: 1px solid #e0e0e0;
+  border-bottom: 1px solid black;
+  max-width:20em;
+}
+
+div td.ttr-user-qualifier
+{
+  font-style: italic;
+  padding-left: 0.5em;
+  border-left: 1px solid #e0e0e0;
+  border-bottom: 1px solid black;
+  text-align:left;
+}
+
+div td.ttr-user-no-qualifier
+{
+  border-bottom: 1px solid black;
+}
+
+div td.ttr-user-comment
+{
+  padding-left: 2em;
+  border-bottom: 1px solid black;
+  font-size:90%;
+  max-width:30em;
 }

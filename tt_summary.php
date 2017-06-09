@@ -51,7 +51,7 @@ else
 
 print "</head>\n";
 
-print "<body>\n";
+print "<body class=ttr>\n";
 print "<h1><img src='img/cts_logo.png' height=50>$tt_title Result Summary</h1>\n";
 
 print "<div data-role=collapsibleset>\n";
@@ -261,7 +261,7 @@ if($include_summary_by_participant)
   print "<div data-role=collapsible>\n";
   print "<h2 id=summary_by_participants>Summaries by Participants</h2>\n";
 
-  if( isset( $data['user_responses'] ) )
+  if( isset($data['user_responses']) )
   {
     $user_responses = $data['user_responses'];
 
@@ -276,7 +276,7 @@ if($include_summary_by_participant)
     $names = array_keys($user_responses);
     usort($names,'lastNameSort');
 
-    foreach ( $names as $name )
+    foreach ($names as $name)
     {
       $responses = $user_responses[$name];
 
@@ -284,7 +284,69 @@ if($include_summary_by_participant)
       print "<div class=tt-participant data-role=collapsible>\n";
       print "<h3>$name</h3>\n";
 
-      print "</div></div>\n";  // group collapsible, group collapsibleset
+      foreach ($responses as $group_index=>$group_responses)
+      {
+        $group = $data['groups'][$group_index];
+        $group_label = $group['label'];
+
+        $has_roles   = isset($group_responses['roles']);
+        $has_comment = isset($group_responses['comment']);
+
+        if( $has_roles || $has_comment )
+        {
+          print "<div class=ttr-table-block>";
+          print "<table class=ttr-user-group data-role=none>\n";
+          print "<tr class=ttr-user-group-header data-role=none>\n";
+          print "<th class=ttr-user-group-label colspan=3>$group_label</th>\n";
+
+          if($has_roles)
+          {
+            $roles = $group_responses['roles'];
+
+            foreach ($roles as $item_id=>$role)
+            {
+              $role_label = $data['roles'][$item_id]['label'];
+              print "<tr class=ttr-user-response>\n";
+
+              $has_qualifier = isset($group_responses['qualifiers'][$item_id]);
+
+              if( isset($role['options'] ) )
+              {
+                $options = array();
+                foreach ( $role['options'] as $option_id=>$selected )
+                {
+                  if($selected)
+                  {
+                    $options[] = $data['roles'][$item_id]['options'][$option_id];
+                  }
+                }
+                $options = implode(', ', $options);
+                $colspan = ($has_qualifier ? 1 : 2);
+                print "<td class=ttr-user-response>$role_label</td>";
+                print "<td class=ttr-user-option colspan=$colspan>$options</td>";
+              }
+              else
+              {
+                $colspan = ($has_qualifier ? 2 : 3);
+                print "<td class=ttr-user-response colspan=$colspan>$role_label</td>";
+              }
+              if( $has_qualifier )
+              {
+                $qualifier = $group_responses['qualifiers'][$item_id];
+                print "<td class=ttr-user-qualifier>$qualifier</td></tr>\n";
+              }
+            }
+          }
+          if($has_comment)
+          {
+            $comment = $group_responses['comment'];
+            print "<tr class=ttr-user-responses>\n";
+            print "<td class=ttr-user-comment colspan=3>$comment</td></tr>\n";
+          }
+          print "</table></div>\n";
+        }
+      }
+      print "</div></div>\n";
     }
 
     if($include_buttons) {
@@ -294,8 +356,9 @@ if($include_summary_by_participant)
       print "<button class='$ui_button tt-print-all tt-participants'>Print all Participants</button>\n";
       print "</div>\n";
     }
-    print "</div>\n";
   }
+  print "</div>\n";
+  print "</div>\n";
 }
 
 print "</div>\n";
