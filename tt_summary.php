@@ -9,31 +9,69 @@ $db = db_connect();
 
 $data = db_all_results($db,$tt_year);
 
+if(isset($_REQUEST['print']))
+{
+  $print = $_REQUEST['print'];
+  $include_summary_by_ministry_area  = ( $print==1 );
+  $include_summary_of_open_responses = ( $print==2 );
+  $include_summary_by_participant    = ( $print==3 );
+  $include_buttons = false;
+  $is_print        = true;
+}
+else
+{
+  $include_summary_by_ministry_area  = true;
+  $include_summary_of_open_responses = true;
+  $include_summary_by_participant    = true;
+  $include_buttons = true;
+  $is_print        = false;
+}
+
+$ui_button = 'ui-btn ui-btn-inline ui-mini'; 
+
+print "<!DOCTYPE html>\n";
+print "<html>\n";
+print "<head>\n";
+
+require("$dir/tt_head.php");
+
+if($is_print)
+{
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-<?php require("$dir/tt_head.php"); ?>
-
-<script src="js/tt_summary.js?v=<?=rand()?>"></script>
-
-</head>
-
-<body>
-<h1><img src='img/cts_logo.png' height=50><?=$tt_title?> Result Summary</h1>
-
-<div data-role=collapsibleset>
-  <div data-role=collapsible>
-    <h2 id=summary_by_group>Summary by Ministry Area</h2>
-    <div class=ttr-buttons>
-      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
-      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
-    </div>
+  <script type='text/javascript'>
+  window.onload = function() { setTimeout(function() { window.print(); }, 500); };
+  </script>
 <?php
+}
+else
+{
+  $v = rand();
+  print "<script src='js/tt_summary.js?v=$v'></script>\n";
+}
+
+print "</head>\n";
+
+print "<body>\n";
+print "<h1><img src='img/cts_logo.png' height=50>$tt_title Result Summary</h1>\n";
+
+print "<div data-role=collapsibleset>\n";
+
+if($include_summary_by_ministry_area) 
+{
+  print "<div data-role=collapsible>\n";
+  print "<h2 id=summary_by_roles>Summary by Ministry Area</h2>\n";
+  if($include_buttons) {
+    print "<div class=ttr-buttons>\n";
+    print "<button class='$ui_button tt-close-all tt-roles'>Close all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-open-all tt-roles'>Open all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-print-all tt-roles'>Print all Ministry Areas</button>\n";
+    print "</div>\n";
+  }
+
   foreach ( $data['groups'] as $group_id => $group ) {
     if( isset( $group['roles'] ) ) {
       print "<div data-role=collapsibleset>\n";
-      print "<div class=tt-collapsible-group data-role=collapsible>\n";
+      print "<div class=tt-role data-role=collapsible>\n";
       print "<h3>".$group['label']."</h3>\n";
       foreach ( $group['roles'] as $item_id ) { 
         $role = $data['roles'][$item_id];
@@ -79,6 +117,7 @@ $data = db_all_results($db,$tt_year);
               if ( isset($response['qualifier']) )
               {
                 $qualifier = $response['qualifier'];
+                $qualifier = preg_replace('/¶/u','<br>',$qualifier);
                 print "<td class=ttr-qualifier>$qualifier</td>";
               }
               print "</tr>\n";
@@ -120,6 +159,7 @@ $data = db_all_results($db,$tt_year);
         foreach ($names as $name)
         {
           $comment = $comments[$name];
+          $comment = preg_replace('/¶/u','<br>',$comment);
           print "<tr class=ttr-user-comment>\n";
           print "<td class=ttr-comment-username>$name</td>";
           print "<td class=ttr-comment>$comment</td>";
@@ -131,25 +171,33 @@ $data = db_all_results($db,$tt_year);
       print "</div></div>\n";  // group collapsible, group collapsibleset
     }
   }
-?>
-    <div class=ttr-buttons>
-      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
-      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
-    </div>
+  if($include_buttons)
+  {
+    print "<div class=ttr-buttons>\n";
+    print "<button class='$ui_button tt-close-all tt_roles'>Close all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-open-all tt_roles'>Open all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-print-all tt_roles'>Print all Ministry Areas</button>\n";
+    print "</div>\n";
+  }
+  print "</div>\n";
+}
 
-  </div>
+if($include_summary_of_open_responses) 
+{
+  print "<div data-role=collapsible>\n";
+  print "<h2 id=summary_by_free_text>Summary of Open Responses by Worship Area</h2>\n";
+  if($include_buttons) {
+    print "<div class=ttr-buttons>\n";
+    print "<button class='$ui_button tt-close-all tt-free-text'>Close all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-open-all tt-free-text'>Open all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-print-all tt-free-text'>Print all Ministry Areas</button>\n";
+    print "</div>\n";
+  }
 
-  <div data-role=collapsible>
-    <h2 id=summary_by_group>Summary of Open Responses by Worship Area</h2>
-    <div class=ttr-buttons>
-      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
-      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
-    </div>
-<?php
   foreach ( $data['groups'] as $group_id => $group ) {
     if( isset( $group['free_text'] ) ) {
       print "<div data-role=collapsibleset>\n";
-      print "<div class=tt-collapsible-group data-role=collapsible>\n";
+      print "<div class=tt-free-text data-role=collapsible>\n";
       print "<h3>".$group['label']."</h3>\n";
       foreach ( $group['free_text'] as $item_id ) { 
         $free_text_label = $data['free_text'][$item_id];
@@ -168,6 +216,7 @@ $data = db_all_results($db,$tt_year);
             foreach ($names as $name)
             {
               $response = $responses[$name];
+              $response = preg_replace('/¶/u','<br>',$response);
               print "<tr class=ttr-user-comment>\n";
               print "<td class=ttr-comment-username>$name</td>";
               print "<td class=ttr-comment>$response</td>";
@@ -180,6 +229,7 @@ $data = db_all_results($db,$tt_year);
 
             foreach ($responses  as $response)
             {
+              $response = preg_replace('/¶/u','<br>',$response);
               print "<tr class=ttr-user-comment>\n";
               print "<td/><td class=ttr-comment>$response</td>";
               print "</tr>\n";
@@ -196,22 +246,27 @@ $data = db_all_results($db,$tt_year);
       print "</div></div>\n";  // group collapsible, group collapsibleset
     }
   }
-?>
-    <div class=ttr-buttons>
-      <button class='ui-btn ui-btn-inline ui-mini tt-close-all-groups'>Close all Ministry Areas</button>
-      <button class='ui-btn ui-btn-inline ui-mini tt-open-all-groups'>Open all Ministry Areas</button>
-    </div>
-  </div>
+  if($include_buttons) {
+    print "<div class=ttr-buttons>\n";
+    print "<button class='$ui_button tt-close-all tt-free-text'>Close all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-open-all tt-free-text'>Open all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-print-all tt-free-text'>Print all Ministry Areas</button>\n";
+    print "</div>\n";
+  }
+  print "</div>\n";
+}
 
-  <div data-role=collapsible>
-    <h2 id=summary_by_participants>Summaries by Participants</h2>
-  </div>
-</div>
+if($include_summary_by_participant)
+{
+  print "<div data-role=collapsible>\n";
+  print "<h2 id=summary_by_participants>Summaries by Participants</h2>\n";
+  print "</div>\n";
+  print "</div>\n";
+}
 
-</body>
-</html>
+print "</body>\n";
+print "</html>\n";
 
-<?php
 function lastNameSort($a,$b)
 {
   $aLast = end(explode(' ', $a));
@@ -219,4 +274,4 @@ function lastNameSort($a,$b)
 
   return strcasecmp($aLast, $bLast);
 }
-?>
+
