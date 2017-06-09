@@ -174,9 +174,9 @@ if($include_summary_by_ministry_area)
   if($include_buttons)
   {
     print "<div class=ttr-buttons>\n";
-    print "<button class='$ui_button tt-close-all tt_roles'>Close all Ministry Areas</button>\n";
-    print "<button class='$ui_button tt-open-all tt_roles'>Open all Ministry Areas</button>\n";
-    print "<button class='$ui_button tt-print-all tt_roles'>Print all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-close-all tt-roles'>Close all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-open-all tt-roles'>Open all Ministry Areas</button>\n";
+    print "<button class='$ui_button tt-print-all tt-roles'>Print all Ministry Areas</button>\n";
     print "</div>\n";
   }
   print "</div>\n";
@@ -260,10 +260,45 @@ if($include_summary_by_participant)
 {
   print "<div data-role=collapsible>\n";
   print "<h2 id=summary_by_participants>Summaries by Participants</h2>\n";
-  print "</div>\n";
-  print "</div>\n";
+
+  if( isset( $data['user_responses'] ) )
+  {
+    $user_responses = $data['user_responses'];
+
+    if($include_buttons) {
+      print "<div class=ttr-buttons>\n";
+      print "<button class='$ui_button tt-close-all tt-participants'>Close all Participants</button>\n";
+      print "<button class='$ui_button tt-open-all tt-participants'>Open all Participants</button>\n";
+      print "<button class='$ui_button tt-print-all tt-participants'>Print all Participants</button>\n";
+      print "</div>\n";
+    }
+
+    $names = array_keys($user_responses);
+    usort($names,'lastNameSort');
+
+    foreach ( $names as $name )
+    {
+      $responses = $user_responses[$name];
+
+      print "<div data-role=collapsibleset>\n";
+      print "<div class=tt-participant data-role=collapsible>\n";
+      print "<h3>$name</h3>\n";
+
+      print "</div></div>\n";  // group collapsible, group collapsibleset
+    }
+
+    if($include_buttons) {
+      print "<div class=ttr-buttons>\n";
+      print "<button class='$ui_button tt-close-all tt-participants'>Close all Participants</button>\n";
+      print "<button class='$ui_button tt-open-all tt-participants'>Open all Participants</button>\n";
+      print "<button class='$ui_button tt-print-all tt-participants'>Print all Participants</button>\n";
+      print "</div>\n";
+    }
+    print "</div>\n";
+  }
 }
 
+print "</div>\n";
 print "</body>\n";
 print "</html>\n";
 

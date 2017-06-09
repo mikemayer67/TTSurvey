@@ -696,6 +696,8 @@ function db_all_results($db,$year)
   and       ( c.selected = 1 or c.selected is null ); " );
 
   $response_summary = array();
+  $user_responses = array();
+
   while($row = $result->fetch_row())
   {
     list($name,$item_id,$selected,$option_id,$qualifier) = $row;
@@ -705,18 +707,22 @@ function db_all_results($db,$year)
       if($selected) 
       {
         $response_summary[$item_id][$name]['selected'] = 1;
+        $user_responses[$name]['roles'][$item_id]['selected'] = 1;
         if( ! is_null($qualifier) ) 
         {
           $response_summary[$item_id][$name]['qualifier'] = $qualifier;
+          $user_responses[$name]['roles'][$item_id]['qualifier'] = $qualifier;
         }
       }
     }
     else 
     {
       $response_summary[$item_id][$name]['options'][$option_id] = 1;
+      $user_responses[$name]['roles'][$item_id]['options'][$option_id] = 1;
       if( ! is_null($qualifier) )
       {
         $response_summary[$item_id][$name]['qualifier'] = $qualifier;
+        $user_responses[$name]['roles'][$item_id]['qualifier'] = $qualifier;
       }
     }
   }
@@ -734,10 +740,12 @@ function db_all_results($db,$year)
   and       b.text is not null;" );
 
   $comment_summary = array();
+  $user_comments = array();
   while($row = $result->fetch_row())
   {
     list($name,$group_index,$text) = $row;
     $comment_summary[$group_index][$name] = $text;
+    $user_responses[$name]['comments'][$group_index] = $text;
   }
   $result->close();
 
@@ -757,6 +765,7 @@ function db_all_results($db,$year)
   {
     list($name,$item_id,$text) = $row;
     $response_summary[$item_id][$name] = $text;
+    $user_responses[$name]['free_text'][$item_id] = $text;
   }
   $result->close();
 
@@ -782,6 +791,7 @@ function db_all_results($db,$year)
                  'response_summary'  => $response_summary,
                  'comment_summary'   => $comment_summary,
                  'anonymous_summary' => $anonymous_summary,
+                 'user_responses'    => $user_responses,
                );
 
   return $data;
