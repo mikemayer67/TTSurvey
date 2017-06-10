@@ -518,20 +518,6 @@ div.ttr-no-response
   margin-left: 1em;
 }
 
-div.ttr-buttons
-{
-  overflow: hidden;
-}
-
-div.ttr-buttons button
-{
-  float: right;
-  padding-top:0;
-  padding-bottom:0;
-  margin-top:0;
-  margin-bottom:0;
-}
-
 table.ttr-user-group
 {
   border-spacing:0;

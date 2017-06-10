@@ -1,0 +1,113 @@
+#tt-menu 
+{
+  position:fixed;
+  margin:0;
+  width:100%;
+  text-align: center;
+  font-family: arial;
+  font-size: 12px;
+  z-index: 1000;
+}
+ 
+div.tt-menu-back
+{
+  height:3em;
+}
+
+#tt-menu ul ul 
+{
+  display: none;
+}
+
+#tt-menu ul li:hover > ul 
+{
+  display: block;
+}
+
+
+#tt-menu ul 
+{
+  top:0;
+  background: #333;
+  padding: 0px 5px;
+  line-height: 24px;  
+  list-style: none;
+  display: block;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+#tt-menu ul:after 
+{
+  content: "";
+  clear: both; 
+  display: block;
+}
+
+#tt-menu ul li 
+{
+  float: left;
+  display: block;
+}
+#tt-menu ul li:hover 
+{
+  background: #aaa;
+
+}
+#tt-menu ul li:hover a 
+{
+  color: #fff;
+}
+
+#tt-menu ul li a 
+{
+  display: block; 
+  padding: 10px 10px ; 
+  color: #fff; 
+  text-decoration: none;
+}
+
+
+#tt-menu ul ul 
+{
+  background: #888; 
+  border-radius: 0px; 
+  position: absolute; 
+  top: 100%; 
+  z-index:10;
+}
+
+#tt-menu ul ul li 
+{
+  float: none; 
+  position: relative;
+  left: 0px;
+  position: relative; 
+  text-align:left;}
+
+#tt-menu ul ul li a 
+{
+  color: #fff; 
+  display: block;  
+  padding-top:0;
+  padding-bottom:0;
+}	
+#tt-menu ul ul li a:hover 
+{
+  background: #aaa;
+  display: block-table;
+  padding-top:5px;
+  padding-bottom:5px;
+}
+
+#tt-menu li.tt-menu-sep
+{
+  background-color: white;
+  height: 1px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+#tt-menu ul ul li a.tt-menu-action
+{
+  color: #fed;
+}

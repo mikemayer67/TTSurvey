@@ -1,39 +1,36 @@
 $(function() {
 
-  $('.tt-open-all.tt-roles').on('click',function() {
-    $('div.tt-role').collapsible('expand');
+  $('a.tt-menu-action').on('click',function() {
+
+    action = $(this).attr('data-action');
+    target = $(this).attr('data-target');
+
+    if( action === 'print' ) {
+      p=1;
+      switch( $(this).attr('data-target') ) 
+      {
+        case 'ttr-role':        p=1; break;
+        case 'ttr-participant': p=3; break;
+        case 'ttr-free-text'  : p=2; break;
+      }
+      window.open(window.location.pathname + '?print=' + p);
+    }
+    else {
+      $('#'+target+'-block').collapsible(action);
+      $('div.'+target).collapsible(action);
+    }
   });
 
-  $('.tt-close-all.tt-roles').on('click',function() {
-    $('div.tt-role').collapsible('collapse');
-  });
+  $('a.tt-menu-goto').on('click',function() {
+    block  = $(this).attr('data-block');
+    target = $(this).attr('data-target');
 
-  $('.tt-print-all.tt-roles').on('click',function() {
-    window.open(window.location.pathname + '?print=1');
-  });
+    target = $('#' + block + '-' + target);
+    $('#'+block+'-block').collapsible('expand');
+    target.collapsible('expand');
 
-  $('.tt-open-all.tt-free-text').on('click',function() {
-    $('div.tt-free-text').collapsible('expand');
+    $('html, body').animate({
+      scrollTop: target.offset().top - $('.tt-menu-back').height()
+    }, 1000);
   });
-
-  $('.tt-close-all.tt-free-text').on('click',function() {
-    $('div.tt-free-text').collapsible('collapse');
-  });
-
-  $('.tt-print-all.tt-free-text').on('click',function() {
-    window.open(window.location.pathname + '?print=2');
-  });
-
-  $('.tt-open-all.tt-participants').on('click',function() {
-    $('div.tt-participant').collapsible('expand');
-  });
-
-  $('.tt-close-all.tt-participants').on('click',function() {
-    $('div.tt-participant').collapsible('collapse');
-  });
-
-  $('.tt-print-all.tt-participants').on('click',function() {
-    window.open(window.location.pathname + '?print=3');
-  });
-
 });
