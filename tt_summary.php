@@ -3,7 +3,7 @@
 $dir = dirname(__FILE__);
 
 require_once("$dir/tt_init.php");
-require_once("$dir/tt_verify_wp_login.php");
+require_once("$dir/ttr_login.php");
 
 $title = $tt_title;
 

@@ -1,0 +1,25 @@
+div.ttr-login-block
+{
+  width: 50%;
+  margin-left:2em;
+}
+
+input.ttr-invalid
+{
+  border: 2px solid red;
+}
+
+input.ttr-pending
+{
+  border: 2px solid orange;
+}
+
+input.ttr-valid
+{
+  border: 2px solid green;
+}
+
+#ttr-login-submit
+{
+  display:none;
+}
