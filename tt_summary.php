@@ -1,7 +1,9 @@
 <?php
 
 $dir = dirname(__FILE__);
+
 require_once("$dir/tt_init.php");
+require_once("$dir/tt_verify_wp_login.php");
 
 $title = $tt_title;
 
@@ -103,7 +105,6 @@ if( ! $is_print )
 }
 
 print "<h1><img src='img/cts_logo.png' height=50>$tt_title Result Summary</h1>\n";
-
 print "<div data-role=collapsibleset>\n";
 
 if($include_summary_by_ministry_area) 
