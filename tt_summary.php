@@ -308,7 +308,7 @@ if($include_summary_by_participant)
 if($include_summary_of_open_responses) 
 {
   print "<div id=ttr-free-text-block data-role=collapsible>\n";
-  print "<h2 id=summary_by_free_text>Summary of Open Responses by Worship Area</h2>\n";
+  print "<h2 id=summary_by_free_text>Summary of Open Responses by Ministry Area</h2>\n";
   foreach ( $data['groups'] as $group_id => $group ) {
     if( isset( $group['free_text'] ) ) {
       print "<div data-role=collapsibleset>\n";
