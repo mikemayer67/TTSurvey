@@ -31,11 +31,7 @@ function gen_anon_id($db)
   $anon_id = gen_user_id($db);
 
   $sql = "insert into user_ids values ('$anon_id')";
-  $result = $db->query($sql);
-  if( ! $result )
-  {
-    throw new Exception("Invalid SQL: $sql",500);
-  }
+  db_query($db,$sql);
 
   $_SESSION['ANON_ID'] = $anon_id;
 

@@ -14,7 +14,7 @@ if( isset($_SESSION['ANON_ID']) )
 
 foreach ( $_POST as $key => $value )
 {
-  $keys  = split('_', $key);
+  $keys  = explode('_', $key);
   $nkeys = count($keys);
 
   $anon_key = "anon_$key";
@@ -108,7 +108,7 @@ if(isset($_SESSION['ANON_ID']))
 <div class=tt-body-div>
 <h2>Thank You!</h2>
 
-<p><strong>Your survey results have been received and recorded.</strong></p>
+<p><strong>Your <?=$tt_year?> survey results have been received and recorded.</strong></p>
 
 <p>If you would like to revisit or revise your answers, you can come back at any time using the following link:<p>
 <a class=tt-indent href='<?=$link1?>'><?=$link1?></a>

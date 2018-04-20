@@ -12,6 +12,7 @@ $user_email = $user_info['email'];
 try
 {
   $db = db_connect();
+  db_clone_prior_year($db,$tt_year,$user_uid);
 ?>
 
 <script src="js/survey.js?v=<?=rand()?>"></script>
@@ -262,7 +263,7 @@ catch (Exception $e)
   $file = $e->getFile();
   $line = $e->getLine();
 
-  error_log("$file\[$line\]: $msg");
+  error_log("${file}[$line]: $msg");
 
   $page = $e->getCode() . '.php';
 ?>

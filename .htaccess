@@ -7,6 +7,8 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /stewardship/404.php [L]
 </IfModule>
 
-AddHandler application/x-httpd-php56 .php
+AddType x-httpd-php .php .html
+AddHandler application/x-httpd-php .php
 
 DirectoryIndex index.php index.html
+

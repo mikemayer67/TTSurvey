@@ -35,13 +35,15 @@ function validate_passwd()
 
 function goto_summary()
 {
+  var input = $('#ttr-passwd');
+  var passwd = input.val();
   var form = document.createElement('form');
   form.setAttribute('method','post');
   form.setAttribute('action','tt_summary.php');
   var auth = document.createElement('input');
   auth.setAttribute('type','hidden');
-  auth.setAttribute('name','ttr_authenticated');
-  auth.setAttribute('value','465520436875636b');
+  auth.setAttribute('name','ttr_passwd');
+  auth.setAttribute('value',passwd);
   form.appendChild(auth);
 
   document.body.appendChild(form);

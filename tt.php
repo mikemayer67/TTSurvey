@@ -2,8 +2,6 @@
 
 $dir = dirname(__FILE__);
 
-$tt_delog = 0;
-
 require_once("$dir/tt_init.php");
 require_once("$dir/sendmail.php");
 

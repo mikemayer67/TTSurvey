@@ -55,25 +55,13 @@ try
   try
   {
     $sql = "insert into user_ids values ('$user_id')";
-    $result = $db->query($sql);
-    if( ! $result )
-    {
-      throw new Exception("Invalid SQL: $sql",500);
-    }
+    $result = db_query($db,$sql);
 
     $sql = "insert into participants values ('$user_id','$name','$email')";
-    $result = $db->query($sql);
-    if( ! $result )
-    {
-      throw new Exception("Invalid SQL: $sql",500);
-    }
+    $result = db_query($db,$sql);
 
     $sql = "insert into participation_history values ('$user_id',$tt_year,0)";
-    $result = $db->query($sql);
-    if( ! $result )
-    {
-      throw new Exception("Invalid SQL: $sql",500);
-    }
+    $result - db_query($db,$sql);
 
     $_SESSION['USER_ID'] = $user_id;
     setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);

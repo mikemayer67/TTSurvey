@@ -133,6 +133,15 @@ $html
 
   $subject = "Time & Talent Survey Submission";
 
-  mail($email,$subject,$body,$headers);
+  $rc = mail($email,$subject,$body,$headers);
+  if( $rc )
+  {
+    error_log("INFO: confirmation email sent to $email ($subject)");
+  }
+  else
+  {
+    error_log("FAIL: failed to send confirmation email to $email ($subject)");
+  }
+
 
 }

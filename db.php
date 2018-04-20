@@ -16,6 +16,32 @@ function db_connect()
   return $db;
 }
 
+function db_active_survey_statics($db=null)
+{
+  if(is_null($db))
+  {
+    $tmp_db = true;
+    $db = db_connect();
+  }
+  else
+  {
+    $tmp_db = false;
+  }
+
+  $result = db_query($db,"select year,admin_name,admin_email,result_pwd,delog from statics where active=1");
+  $n = $result->num_rows;
+
+  if($n>1) { throw new Exception('Too many active entries in the statics table',500); }
+  if($n<1) { throw new Exception('No active entries in the statics table',500); }
+
+  $data = $result->fetch_assoc();
+  $result->close();
+
+  if( $tmp_db ) { $db->close(); }
+
+  return $data;
+}
+
 
 function db_userid_exists($id,$db=null)
 {
@@ -141,22 +167,23 @@ function db_survey_items($db,$year,$group)
 
   $sql = "
     select 
-       si.item_id,
-       si.order_index,
-       si.item_type,
-       si.note,
-       si.anonymous,
-       sl.type,
-       sl.level,
-       sl.italic,
-       sl.bold,
-       sl.size,
-       si.note,
-       coalesce(sl.value,si.label) label
- from survey_items si left join survey_labels as sl
-   on si.item_id = sl.item_id 
-where si.year = $year
-  and si.group_index = $group;";
+      s.item_id,
+      s.order_index,
+      i.item_type,
+      i.anonymous,
+      l.type,
+      l.level,
+      l.italic,
+      l.bold,
+      l.size,
+      coalesce(l.value,i.label) label
+    from 
+    	survey s,
+      survey_items i left join survey_labels l on (l.item_id=i.item_id)
+    where
+      s.year = $year and
+      s.group_index = $group and 
+      i.item_id=s.item_id; ";
 
   $result = db_query($db,$sql);
 
@@ -179,10 +206,9 @@ function db_role_options($db,$year)
            a.option_id,
            a.option_label,
            a.is_primary
-      from survey_role_options a
-     where exists ( select * from survey_items b
-                     where a.item_id = b.item_id
-                       and b.year = $year )
+      from survey s, survey_role_options a
+     where s.year = $year
+       and a.item_id = s.item_id
      order by item_id,option_id;";
 
   $result = db_query($db,$sql);
@@ -208,10 +234,9 @@ function db_role_qualifiers($db,$year)
   $sql = "
     select concat(a.item_id,'_',a.qualification_option),
            a.qualification_hint
-      from survey_role_qualifiers a
-     where exists ( select * from survey_items b
-                     where a.item_id = b.item_id
-                       and b.year = $year )";
+      from survey s, survey_role_qualifiers a
+     where s.year = $year
+       and a.item_id = s.item_id;";
 
   $result = db_query($db,$sql);
 
@@ -230,13 +255,12 @@ function db_role_dependencies($db,$year)
   $rval = array();
 
   $sql = "
-    select concat(item_id,'_',option_id) as child,
-           concat(item_id,'_',require_option_id) as parent 
-      from survey_role_options a
+    select concat(a.item_id,'_',a.option_id) as child,
+           concat(a.item_id,'_',a.require_option_id) as parent 
+      from survey s, survey_role_options a
      where a.is_primary=0
-       and exists ( select * from survey_items b
-                     where a.item_id = b.item_id
-                       and b.year = $year ); ";
+       and s.year = $year
+       and a.item_id = s.item_id;";
 
   $result = db_query($db,$sql);
 
@@ -272,49 +296,28 @@ function db_clear_submitted($db,$year,$user_id)
 
 function db_clear($db,$year,$user_id,$submitted)
 {
-  $tables = array(
-    'response_group_comment',
-    'response_free_text',
-    'response_role_options', 
-    'response_roles',
-    'participation_history' );
+  // following will cascade to all response_xxx tables  
+  $sql = "
+    delete from participation_history 
+     where user_id='$user_id' 
+       and year=$year 
+       and submitted=$submitted;";
 
-  foreach ( $tables as $table )
-  {
-    $sql = "
-      delete from $table 
-       where user_id='$user_id' 
-         and year=$year 
-         and submitted=$submitted";
-
-    $result = db_query($db,$sql);
-  }
-
-
+  $result = db_query($db,$sql);
 }
 
 function db_promote($db,$year,$user_id)
 {
-  db_clear($db,$year,$user_id,1);
+  db_clear_submitted($db,$year,$user_id);
 
-  // note that response_role_options will cascade update
-  $tables = array(
-    'response_group_comment', 
-    'response_free_text', 
-    'response_roles',
-    'participation_history' );
+  // following will cascade to all response_xxx tables
+  $sql = "
+    update participation_history
+       set submitted=1
+     where user_id='$user_id'
+       and year=$year";
 
-  foreach ( $tables as $table )
-  {
-    $sql = "
-      update $table 
-         set submitted=1
-       where user_id='$user_id'
-         and year=$year; ";
-
-    $result = db_query($db,$sql);
-  }
-
+  $result = db_query($db,$sql);
 }
 
 function db_update_role($db,$year,$user_id,$item_id,$value)
@@ -335,7 +338,7 @@ function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value)
 {
   db_add_participation_history($db,$year,$user_id);
 
-  db_update_role($db,$year,$user_id,$item_id,0);   // Danger <--- not sure if this will lead to MySQL integrity issue
+  db_update_role($db,$year,$user_id,$item_id,0);
 
   $sql = "
     insert into response_role_options
@@ -419,7 +422,7 @@ function db_update_role_qualifier($db,$year,$user_id,$item_id,$value)
       $result = $db->query($sql);
     }
   }
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  if( ! $result ) { bad_sql($sql); }
 }
 
 function db_update_freetext($db,$year,$user_id,$item_id,$value)
@@ -446,8 +449,7 @@ function db_update_freetext($db,$year,$user_id,$item_id,$value)
       insert into response_free_text
              (user_id, year, submitted, item_id, text)
       values ('$user_id', $year, 0, $item_id, '$value')
-          on duplicate key update
-             text = '$value';";
+          on duplicate key update text = '$value';";
   }
   $result = db_query($db,$sql);
 }
@@ -574,11 +576,11 @@ function db_create_working_copy($db,$year,$user_id)
   if($row[0] == 0) { return true; }
 
   $tables = array(
+    'participation_history',
     'response_group_comment',
     'response_free_text',
     'response_roles',
-    'response_role_options', 
-    'participation_history' );
+    'response_role_options'); 
 
   $columns = array(
     'response_group_comment' => 'user_id, year, 0, group_index, text', 
@@ -612,11 +614,96 @@ function db_can_revert($db,$year,$user_id)
   return $n>0;
 }
 
+function db_clone_prior_year($db,$year,$user_id)
+{
+  // check if already have data for this user this year.  if so, we're done
+
+  $result = db_query($db,"select submitted from participation_history where year=$year and user_id='$user_id'");
+
+  $n = $result->num_rows;
+  if($n>0) { return; } 
+
+  // check if have SUBMITTED data for this user from a prior year.  If not, we're also done
+
+  $result = db_query($db,"select max(year) from participation_history where user_id='$user_id' and submitted=1 and year<$year");
+
+  $n = $result->num_rows;
+  if($n<1) { return; }
+
+  // if we got here, results should contain a single row containing the last year user submitted a form
+  
+  $row = $result->fetch_row();
+  $ref_year = $row[0];
+
+  error_log("INFO: Cloning $user_id data from $ref_year");
+
+  // start updating the data
+
+  db_add_participation_history($db,$year,$user_id);
+
+  // copy item level responses
+  
+  $tables = array(
+    'response_free_text',
+    'response_roles',
+    'response_role_options'); 
+
+  $columns = array(
+    'response_group_comment' => "a.user_id, $year, 0, a.group_index, a.text", 
+    'response_free_text'     => "a.user_id, $year, 0, a.item_id, a.text", 
+    'response_roles'         => "a.user_id, $year, 0, a.item_id, a.selected, a.qualifier", 
+    'response_role_options'  => "a.user_id, $year, 0, a.item_id, a.option_id, a.selected");
+
+  foreach ($tables as $table)
+  {
+    $col = $columns[$table];
+    $sql = "
+      insert into $table 
+      select $col
+        from survey s, $table a
+       where a.year=$ref_year
+         and s.year=$year
+         and a.item_id=s.item_id
+         and a.user_id='$user_id'
+         and a.submitted=1 ;";
+
+    db_query($db,$sql);
+  }
+
+  // cpoy group level responses
+
+  $table = 'response_group_comment';
+  $col = $columns[$table];
+
+  $sql = "
+      insert into $table
+      select $col
+        from survey_groups g, $table a
+       where a.year=$ref_year
+         and g.year=$year
+         and a.group_index=g.group_index
+         and a.user_id='$user_id'
+         and a.submitted=1 ;";
+
+  db_query($db,$sql);
+}
+
 
 function db_query($db,$sql)
 {
   $result = $db->query($sql);
-  if( ! $result ) { throw new Exception("Invalid SQL: $sql",500); }
+  if( ! $result ) 
+  { 
+    $sql = preg_replace('/\s+/',' ',$sql);
+    $sql = preg_replace('/^\s/','',$sql);
+    $sql = preg_replace('/\s$/','',$sql);
+
+    $trace = debug_backtrace();
+    $file = $trace[0]["file"];
+    $line = $trace[0]["line"];
+
+    throw new Exception("Invalid SQL: $sql  [invoked at: $file:$line]",500); 
+  }
   return $result;
 }
 
@@ -637,11 +724,12 @@ function db_all_results($db,$year)
   $group_xref = array();
 
   $result = db_query($db, "
-    select   item_id, group_index, coalesce(summary_label,label) 
-    from     survey_items
+    select   s.item_id, s.group_index, coalesce(i.summary_label,i.label) 
+    from     survey s, survey_items i
     where    year=$year
-    and      item_type='role'
-    order by group_index,order_index; ");
+    and      i.item_id=s.item_id
+    and      i.item_type='role'
+    order by s.group_index,s.order_index; ");
   
   $roles = array();
   while($row = $result->fetch_row())
@@ -655,9 +743,9 @@ function db_all_results($db,$year)
 
   $result = db_query($db,"
     select   a.item_id, a.option_id, a.option_label
-    from     survey_role_options a, survey_items b
-    where    a.item_id = b.item_id
-    and      b.year=$year" );
+    from     survey s, survey_role_options a
+    where    a.item_id = s.item_id
+      and    s.year=$year" );
 
   while($row = $result->fetch_row())
   {
@@ -666,9 +754,10 @@ function db_all_results($db,$year)
   }
 
   $result = db_query($db,"
-    select   item_id, group_index, coalesce(summary_label,label) 
-    from     survey_items
-    where    year=$year
+    select   s.item_id, s.group_index, coalesce(i.summary_label,i.label) 
+    from     survey s, survey_items i
+    where    s.year=$year
+    and      i.item_id=s.item_id
     and      item_type='free_text'
     order by group_index,order_index; ");
   
@@ -695,8 +784,8 @@ function db_all_results($db,$year)
   left join response_role_options c 
   on        (c.item_id=b.item_id and c.user_id=b.user_id and c.year=b.year)
   where     b.year=$year
-  and       a.user_id=b.user_id
   and       b.submitted=1
+  and       a.user_id=b.user_id
   and       ( c.selected = 1 or c.selected is null ); " );
 
   $response_summary = array();
@@ -784,6 +873,7 @@ function db_all_results($db,$year)
   and       b.submitted=1
   and       b.text is not null;" );
 
+  $anonymous_summary = array();
   while($row = $result->fetch_row())
   {
     list($item_id,$text) = $row;

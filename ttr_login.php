@@ -1,20 +1,37 @@
 <?php
 
-if( isset( $_POST['ttr_authenticated'] ) )
+$ttr_passwd = null;
+
+if(isset($_POST['ttr_passwd']))
 {
-  $_SESSION['ttr_authenticated'] = $_POST['ttr_authenticated'];
-  setcookie('ttr_authenticated','1', time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
-  return;
+  $ttr_passwd = $_POST['ttr_passwd'];
 }
-if( isset( $_SESSION['ttr_authenticated'] ) )
+else if(isset($_SESSION['ttr_passwd']))
 {
-  return;
+  $ttr_passwd = $_SESSION['ttr_passwd'];
 }
-if( isset( $_COOKIE['ttr_authenticated'] ) )
+else if(isset($_COOKIE['ttr_passwd']))
 {
-  $_SESSION['ttr_authtenticated'] = $_COOKIE['ttr_authenticated'];
-  return;
+  $ttr_passwd = $_COOKIE['ttr_passwd'];
 }
+
+if(isset($ttr_passwd))
+{
+  $statics = db_active_survey_statics();
+  $result_pwd = $statics['result_pwd'];
+
+  if( strcmp($ttr_passwd, $result_pwd) == 0 )
+  {
+    $_SESSION['ttr_passwd'] = $ttr_passwd;
+    setcookie('ttr_passwd',$ttr_passwd, time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
+    return;
+  }
+}
+else
+{
+  unset($_SESSION['ttr_passwd']);
+}
+
 
 print "<!DOCTYPE html>\n";
 print "<html>\n";

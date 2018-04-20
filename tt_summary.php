@@ -316,12 +316,12 @@ if($include_summary_of_open_responses)
       print "<h3>".$group['label']."</h3>\n";
       foreach ( $group['free_text'] as $item_id ) { 
         $free_text_label = $data['free_text'][$item_id];
-        $has_names = isset($data['response_summary']);
-        $has_anon  = isset($data['anonymous_summary']);
+        $has_names = ! empty($data['response_summary']);
+        $has_anon  = ! empty($data['anonymous_summary']);
         if( $has_names || $has_anon )
         {
           print "<table class=ttr-comments data-role=none>\n";
-          if($has_names)
+          if($has_names && isset($data['response_summary'][$item_id]))
           {
             $responses = $data['response_summary'][$item_id];
 
@@ -338,7 +338,7 @@ if($include_summary_of_open_responses)
               print "</tr>\n";
             }
           }
-          if($has_anon)
+          if($has_anon and isset($data['anonymous_summary'][$item_id]))
           {
             $responses = $data['anonymous_summary'][$item_id];
 
@@ -371,8 +371,11 @@ print "</html>\n";
 
 function lastNameSort($a,$b)
 {
-  $aLast = end(explode(' ', $a));
-  $bLast = end(explode(' ', $b));
+  $aa = explode(' ', $a);
+  $bb = explode(' ', $b);
+
+  $aLast = end($aa);
+  $bLast = end($bb);
 
   return strcasecmp($aLast, $bLast);
 }
