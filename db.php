@@ -28,7 +28,7 @@ function db_active_survey_statics($db=null)
     $tmp_db = false;
   }
 
-  $result = db_query($db,"select year,admin_name,admin_email,result_pwd,delog from statics where active=1");
+  $result = db_query($db,"select * from statics where active=1");
   $n = $result->num_rows;
 
   if($n>1) { throw new Exception('Too many active entries in the statics table',500); }

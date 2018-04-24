@@ -82,7 +82,8 @@ div.tt-menu-back
   position: relative;
   left: 0px;
   position: relative; 
-  text-align:left;}
+  text-align:left;
+}
 
 #tt-menu ul ul li a 
 {
@@ -111,3 +112,17 @@ div.tt-menu-back
 {
   color: #fed;
 }
+
+#tt-menu ul ul ul
+{
+  position: absolute;
+  top:0;
+  left:3em;
+  width:auto;
+}
+
+a.tt-menu-goto.ui-link
+{
+  white-space: nowrap;
+}
+
