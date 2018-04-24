@@ -9,6 +9,8 @@ $user_info = db_user_info($user_uid);
 $user_name = $user_info['name'];
 $user_email = $user_info['email'];
 
+$can_edit = $tt_year == $tt_active_year;
+
 try
 {
   $db = db_connect();
@@ -25,7 +27,7 @@ try
 <span id=tt_user_uid class=tt-user-info>User ID: <span><?=$user_uid?></span>
   <button data-role='none'>logout</button></span>
 
-<?php if( db_can_revert($db,$tt_year,$user_id) ) { ?>
+<?php if( $can_edit && db_can_revert($db,$tt_year,$user_id) ) { ?>
 <span id=tt_reload class=tt-user-info>Found Submitted Responses: <button data-role=none>Reload</button></span>
 <?php } ?>
 
@@ -275,10 +277,14 @@ finally
   $db->close();
 }
 
+if($can_edit) {
 ?>
-
 <div class='submit'><input id=submit_survey_button' type='submit' data-theme=b name=submit_survey value="Submit Survey"></div>
 </form>
+<?php } else { ?>
+</form>
+<script type='text/javascript'>disable_edit();</script>
+<?php } ?>
 
 </body>
 </html>

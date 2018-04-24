@@ -201,14 +201,18 @@ function toggle_children()
 {
   var children = $(this).attr('data-tt-children');
 
-  if( $(this).is(':checked') ) { 
-    $(children).prop('disabled',false)
-    .each( function() { $(this).prop('checked', $(this).data('cached') ) } );
-  }
-  else { 
-    $(children).prop('disabled',true)
-    .each( function() { $(this).data('cached', $(this).prop('checked') ) } )
-    .prop('checked',false);
+  if( $(this).is(':disabled') ) {
+    $(children).prop('disabled',true);
+  } else {
+    if( $(this).is(':checked') ) { 
+      $(children).prop('disabled',false)
+      .each( function() { $(this).prop('checked', $(this).data('cached') ) } );
+    }
+    else { 
+      $(children).prop('disabled',true)
+      .each( function() { $(this).data('cached', $(this).prop('checked') ) } )
+      .prop('checked',false);
+    }
   }
 }
 
@@ -282,5 +286,11 @@ function reload_data()
     })
   });
 
+}
+
+function disable_edit()
+{
+  $('textarea').attr('disabled',true);
+  $('input').attr('disabled',true);
 }
 

@@ -14,11 +14,12 @@ try
 {
   $statics = db_active_survey_statics();
 
-  $tt_year      = $statics['year'];
-  $tt_poc       = $statics['admin_name'];
-  $tt_poc_email = $statics['admin_email'];
-  $tt_delog     = $statics['delog'];
+  $tt_active_year = $statics['year'];
+  $tt_poc         = $statics['admin_name'];
+  $tt_poc_email   = $statics['admin_email'];
+  $tt_delog       = $statics['delog'];
 
+  $tt_year = $tt_active_year;
   if(isset($_REQUEST['year']))
   {
     $tt_year = $_REQUEST['year'];
