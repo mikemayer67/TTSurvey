@@ -13,7 +13,7 @@ AddHandler application/x-httpd-php .php
 </IfDefine>
 
 <IfDefine !LocalhostServer>
-AddHandler application/x-httpd-php56.php
+AddHandler application/x-httpd-php56 .php
 </IfDefine>
 
 DirectoryIndex index.php index.html
