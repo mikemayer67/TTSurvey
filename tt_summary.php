@@ -80,28 +80,31 @@ if( ! $is_print )
   {
     $names = array_keys($data['user_responses']);
     usort($names,'lastNameSort');
+
+    $num_names = count($names);
+    $end_imenu = "";
+
     foreach ( $names as $name )
     {
       $username = strtolower(preg_replace('/\s/','_',$name));
 
-      $lastname = explode(' ', $name);
-      $last_initial = substr( end($lastname), 0, 1 );
+      if($num_names>15)
+      {
+        $lastname = explode(' ', $name);
+        $last_initial = substr( end($lastname), 0, 1 );
 
-      if(empty($cur_initial))
-      {
-        print "<li><a href='#'>$last_initial &gt;</a><ul>\n";
-        $cur_initial = $last_initial;
-      }
-      else if($cur_initial != $last_initial)
-      {
-        print "</ul></li>\n";
-        print "<li><a href='#'>$last_initial &gt;</a><ul>\n";
-        $cur_initial = $last_initial;
+        if(empty($cur_initial) || ($cur_initial != $last_initial) )
+        {
+          print $end_imenu;
+          print "<li><a href='#'>$last_initial &gt;</a><ul>\n";
+          $cur_initial = $last_initial;
+          $end_imenu = "</ul></li>\n";
+        }
       }
 
       print "<li><a class=tt-menu-goto data-block=ttr-participant data-target='$username' href='#'>$name</a></li>\n";
     }
-    print "</ul></li>\n";
+    print $end_imenu;
   }
   print "</ul></li>\n";
   print "<li><a href='#'>Open Responses</a><ul class=tt-menu>\n";
