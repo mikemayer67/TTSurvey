@@ -1,5 +1,74 @@
 <?php
 
+
+function email_welcome_info($uid,$name,$email,$year)
+{
+  global $tt_root_url;
+  global $tt_active_year;
+  global $tt_poc;
+
+  $rval = false;
+
+  if( isset($email) && strlen($email)>0 )
+  {
+    $to = $email;
+    $subject = "Time & Talent Survey Links";
+
+    $query = "uid=$uid";
+    if( isset($aid) && strlen($aid)>0 ) { $query .= "&amp;aid=$aid"; }
+
+    $url = "$tt_root_url/tt.php?$query";
+
+    $message = "
+      <html>
+      <head>
+      <meta http-equiv='Content-Type' content='text/html charset=us-ascii'>
+      </head>
+      <body style='word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;'>
+      <div><br></div>
+      <div><b>Welcome to the $year CTS Time &amp; Talent Survey.</b></div>
+      <div><br></div>
+      <blockquote style='margin: 0 0 0 40px; border: none; padding: 0px;'>
+      <div>Your UserID is $uid</div>
+      <div><br></div>
+      <div>Your name will appear on the survey as: $name</div>
+      <div><br></div>
+      <div>You can start your survey using the following link:</div>
+      <div><a href='$url'>$url</a></div>
+      <div><br></div>
+      </blockquote>
+      Thank you,
+      <div><i>$tt_poc</i></div>
+      <div><br></div>
+      </body>
+      </html>
+      ";
+
+    // Always set content-type when sending HTML email
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+    // More headers
+    $headers .= 'From: <stewardship@ctslutheranelca.org>' . "\r\n";
+
+    if( mail($to,$subject,$message,$headers) )
+    {
+      error_log("Welcome email sent to $name ($to)");
+      $rval = true;
+    }
+    else
+    {
+      error_log("Failed to sedn email to $name ($to)");
+    }
+  }
+  else
+  {
+    error_log("No welcome email sent to $name ... no email address");
+  }
+
+  return $rval;
+}
+
 function email_account_info($uid,$name,$email,$aid)
 {
   global $tt_root_url;
@@ -21,7 +90,7 @@ function email_account_info($uid,$name,$email,$aid)
       </head>
       <body style='word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;'>
       <div><br></div>
-      <div><b>Welcome to the 2017 CTS Time &amp; Talent Survey.</b></div>
+      <div><b>Welcome to the $tt_year CTS Time &amp; Talent Survey.</b></div>
       <div><br></div>
       <blockquote style='margin: 0 0 0 40px; border: none; padding: 0px;'>
       <div>Your UserID is $uid</div>
@@ -33,7 +102,7 @@ function email_account_info($uid,$name,$email,$aid)
       <div><br></div>
       </blockquote>
       Thank you,
-      <div><i>mike mayer</i></div>
+      <div><i>$tt_poc</i></div>
       <div><br></div>
       </body>
       </html>

@@ -1,5 +1,8 @@
 <?php
 
+// Check to see if the summary password has
+//   already been enterred.
+
 $ttr_passwd = null;
 
 if(isset($_POST['ttr_passwd']))
@@ -32,6 +35,37 @@ else
   unset($_SESSION['ttr_passwd']);
 }
 
+// If user already logged in as admin, go ahead and let
+//   them access the summary (and set ttr_passwd for them)
+
+$tta_passwd = null;
+
+if(isset($_POST['tta_passwd']))
+{
+  $tta_passwd = $_POST['tta_passwd'];
+}
+else if(isset($_SESSION['tta_passwd']))
+{
+  $tta_passwd = $_SESSION['tta_passwd'];
+}
+else if(isset($_COOKIE['tta_passwd']))
+{
+  $tta_passwd = $_COOKIE['tta_passwd'];
+}
+
+if(isset($tta_passwd))
+{
+  $statics = db_active_survey_statics();
+  $admin_pwd = $statics['admin_pwd'];
+  $result_pwd = $statics['result_pwd'];
+
+  if( strcmp($tta_passwd, $admin_pwd) == 0 )
+  {
+    $_SESSION['ttr_passwd'] = $result_pwd;
+    setcookie('ttr_passwd',$result_pwd, time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
+    return;
+  }
+}
 
 print "<!DOCTYPE html>\n";
 print "<html>\n";

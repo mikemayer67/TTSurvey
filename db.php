@@ -16,19 +16,75 @@ function db_connect()
   return $db;
 }
 
-function db_active_survey_statics($db=null)
-{
-  if(is_null($db))
+class LocalDB {
+  public  $db = null;
+  private $local = false;
+
+  function __construct($db=null)
   {
-    $tmp_db = true;
-    $db = db_connect();
-  }
-  else
-  {
-    $tmp_db = false;
+    if(is_null($this->db))
+    {
+      $this->local = true;
+      $this->db = db_connect();
+    }
+    else
+    {
+      $this->local = false;
+      $this->db = $db;
+    }
   }
 
-  $result = db_query($db,"select * from statics where active=1");
+  function __destruct()
+  {
+    if($this->local)
+    {
+      $this->db->close();
+    }
+  }
+
+  public function query($sql)
+  {
+    $result = $this->db->query($sql);
+    if( ! $result ) 
+    { 
+      $sql = preg_replace('/\s+/',' ',$sql);
+      $sql = preg_replace('/^\s/','',$sql);
+      $sql = preg_replace('/\s$/','',$sql);
+
+      $trace = debug_backtrace();
+      $file = $trace[0]["file"];
+      $line = $trace[0]["line"];
+
+      throw new Exception("Invalid SQL: $sql  [invoked at: $file:$line]",500); 
+    }
+    return $result;
+  }
+
+  public function clear_history($year,$user_id,$submitted)
+  {
+    // following will cascade to all response_xxx tables  
+    $sql = "
+    delete from participation_history 
+     where user_id='$user_id' 
+       and year=$year 
+       and submitted=$submitted;";
+
+    $result = query($sql);
+  }
+
+  public function escape($value)
+  {
+    return $this->db->real_escape_string($value);
+  }
+
+}
+
+
+function db_active_survey_statics($idb=null)
+{
+  $db = new LocalDB($idb);
+
+  $result = $db->query("select * from statics where active=1");
   $n = $result->num_rows;
 
   if($n>1) { throw new Exception('Too many active entries in the statics table',500); }
@@ -37,49 +93,81 @@ function db_active_survey_statics($db=null)
   $data = $result->fetch_assoc();
   $result->close();
 
-  if( $tmp_db ) { $db->close(); }
-
   return $data;
 }
 
+function db_update_statics_userids_sent($idb=null)
+{
+  $db = new LocalDB($idb);
 
-function db_userid_exists($id,$db=null)
+  $datetime = date('Y-m-d H:i:s');
+
+  $db->query("update statics set userids_sent='$datetime' where active=1");
+}
+
+function db_userid_admin($idb=null)
+{
+  $db = new LocalDB($idb);
+
+  $rval = array();
+
+  $sql = "
+    select 
+        user_id, 
+        max(year)
+      from 
+       participation_history
+     where 
+       submitted = 1
+     group by 
+       user_id;";
+
+  $result = $db->query($sql);
+
+  $ids = array();
+  while( $row = $result->fetch_row() )
+  {
+    list($id,$year) = $row;
+    $ids[$id] = $year;
+  }
+
+  foreach($ids as $id=>$year)
+  {
+    $info = db_user_info($id,$db);
+    $rval[] = array('id'=>$id,'name'=>$info['name'], 'email'=>$info['email'], 'year'=>$year);
+  }
+
+  return $rval;
+}
+
+
+function db_userid_exists($id,$idb=null)
 {
   $id = strtoupper($id);
 
-  if(is_null($db))
-  {
-    $tmp_db = true;
-    $db = db_connect();
-  }
-  else
-  {
-    $tmp_db = false;
-  }
+  $db = new LocalDB($idb);
 
   $sql = "select user_id from participants where user_id='$id'";
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   $n = $result->num_rows;
   $result->close();
 
-  if( $tmp_db ) { $db->close(); }
-
   return $n==1;
 }
 
-function db_user_info($id)
+function db_user_info($id,$idb=null)
 {
   $data = array();
 
   try
   {
-    $db = db_connect();
+    $db = new LocalDB($idb);
 
     $id = strtoupper($id);
 
     $sql = "select name,email from participants where user_id='$id'";
-    $result = db_query($db,$sql);
+    $result = $db->query($sql);
 
     $n = $result->num_rows;
     if( $n == 1 ) 
@@ -88,9 +176,9 @@ function db_user_info($id)
     }
     $result->close();
   }
-  finally
+  catch(Exception $e)
   {
-    $db->close();
+    error_log($e->getMessage());
   }
 
   return $data;
@@ -101,16 +189,16 @@ function db_update_user_name($id,$name)
   $rval = false;
   try
   {
-    $db = db_connect();
+    $db = new LocalDB();
 
     $id = strtoupper($id);
 
     $sql = "update participants set name='$name' where user_id='$id'";
     $rval = $db->query($sql);
   }
-  finally
+  catch(Exception $e)
   {
-    $db->close();
+    error_log($e->getMessage());
   }
 
   return $rval;
@@ -121,34 +209,36 @@ function db_update_user_email($id,$email)
   $rval = false;
   try
   {
-    $db = db_connect();
+    $db = new LocalDB();
 
     $id = strtoupper($id);
 
     $sql = "update participants set email='$email' where user_id='$id'";
     $rval = $db->query($sql);
   }
-  finally
+  catch(Exception $e)
   {
-    $db->close();
+    error_log($e->getMessage());
   }
 
   return $rval;
 }
 
-function db_add_participation_history($db,$year,$user_id)
+function db_add_participation_history($idb,$year,$user_id)
 {
+  $db = new LocalDB($idb);
   $sql = "insert ignore into participation_history values ('$user_id',$year,0)";
-
   $result = $db->query($sql);
 }
 
-function db_survey_groups($db,$year)
+function db_survey_groups($idb,$year)
 {
+  $db = new LocalDB($idb);
+
   $data = array();
 
   $sql = "select * from survey_groups where year=$year order by group_index";
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_assoc() )
   {
@@ -161,8 +251,10 @@ function db_survey_groups($db,$year)
 }
 
 
-function db_survey_items($db,$year,$group)
+function db_survey_items($idb,$year,$group)
 {
+  $db = new LocalDB($idb);
+
   $data = array();
 
   $sql = "
@@ -178,14 +270,14 @@ function db_survey_items($db,$year,$group)
       l.size,
       coalesce(l.value,i.label) label
     from 
-    	survey s,
+      survey s,
       survey_items i left join survey_labels l on (l.item_id=i.item_id)
     where
       s.year = $year and
       s.group_index = $group and 
       i.item_id=s.item_id; ";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_assoc() )
   {
@@ -197,8 +289,10 @@ function db_survey_items($db,$year,$group)
   return $data;
 }
 
-function db_role_options($db,$year)
+function db_role_options($idb,$year)
 {
+  $db = new LocalDB($idb);
+
   $rval = array();
 
   $sql = "
@@ -211,7 +305,7 @@ function db_role_options($db,$year)
        and a.item_id = s.item_id
      order by item_id,option_id;";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -220,15 +314,17 @@ function db_role_options($db,$year)
     $key = ( $is_primary ? 'primary' : 'secondary' );
 
     $rval[$item_id][$key][] = array( 'label' => $option_label,
-                                     'id'    => $item_id.'_'.$option_id );
+      'id'    => $item_id.'_'.$option_id );
   }
   $result->close();
 
   return $rval;
 }
 
-function db_role_qualifiers($db,$year)
+function db_role_qualifiers($idb,$year)
 {
+  $db = new LocalDB($idb);
+
   $rval = array();
 
   $sql = "
@@ -238,7 +334,7 @@ function db_role_qualifiers($db,$year)
      where s.year = $year
        and a.item_id = s.item_id;";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -250,8 +346,10 @@ function db_role_qualifiers($db,$year)
   return $rval;
 }
 
-function db_role_dependencies($db,$year)
+function db_role_dependencies($idb,$year)
 {
+  $db = new LocalDB($idb);
+
   $rval = array();
 
   $sql = "
@@ -262,7 +360,7 @@ function db_role_dependencies($db,$year)
        and s.year = $year
        and a.item_id = s.item_id;";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -284,30 +382,21 @@ function db_role_dependencies($db,$year)
   return $rval;
 }
 
-function db_clear_unsubmitted($db,$year,$user_id)
+function db_clear_unsubmitted($idb,$year,$user_id)
 {
-  db_clear($db,$year,$user_id,0);
+  $db = new LocalDB($idb);
+  $db->clear_history($year,$user_id,0);
 }
 
-function db_clear_submitted($db,$year,$user_id)
+function db_clear_submitted($idb,$year,$user_id)
 {
-  db_clear($db,$year,$user_id,1);
+  $db = new LocalDB($idb);
+  $db->clear_history($year,$user_id,1);
 }
 
-function db_clear($db,$year,$user_id,$submitted)
+function db_promote($idb,$year,$user_id)
 {
-  // following will cascade to all response_xxx tables  
-  $sql = "
-    delete from participation_history 
-     where user_id='$user_id' 
-       and year=$year 
-       and submitted=$submitted;";
-
-  $result = db_query($db,$sql);
-}
-
-function db_promote($db,$year,$user_id)
-{
+  $db = new LocalDB($idb);
   db_clear_submitted($db,$year,$user_id);
 
   // following will cascade to all response_xxx tables
@@ -317,11 +406,13 @@ function db_promote($db,$year,$user_id)
      where user_id='$user_id'
        and year=$year";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 }
 
-function db_update_role($db,$year,$user_id,$item_id,$value)
+function db_update_role($idb,$year,$user_id,$item_id,$value)
 {
+  $db = new LocalDB($idb);
+
   db_add_participation_history($db,$year,$user_id);
 
   $sql = "
@@ -331,11 +422,13 @@ function db_update_role($db,$year,$user_id,$item_id,$value)
         on duplicate key update
            selected = $value;";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 }
 
-function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value)
+function db_update_role_option($idb,$year,$user_id,$item_id,$option_id,$value)
 {
+  $db = new LocalDB($idb);
+
   db_add_participation_history($db,$year,$user_id);
 
   db_update_role($db,$year,$user_id,$item_id,0);
@@ -347,17 +440,19 @@ function db_update_role_option($db,$year,$user_id,$item_id,$option_id,$value)
         on duplicate key update
            selected = $value;";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 }
 
-function db_update_group_comment($db,$year,$user_id,$group_index,$value)
+function db_update_group_comment($idb,$year,$user_id,$group_index,$value)
 {
+  $db = new LocalDB($idb);
+
   db_add_participation_history($db,$year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
   $value = preg_replace('/\s+/',' ',$value);
-  $value = $db->real_escape_string($value);
+  $value = $db->escape($value);
 
   if( strlen($value) == 0 )
   {
@@ -377,17 +472,19 @@ function db_update_group_comment($db,$year,$user_id,$group_index,$value)
           on duplicate key update
             text = '$value';";
   }
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 }
 
-function db_update_role_qualifier($db,$year,$user_id,$item_id,$value)
+function db_update_role_qualifier($idb,$year,$user_id,$item_id,$value)
 {
+  $db = new LocalDB($idb);
+
   db_add_participation_history($db,$year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
   $value = preg_replace('/\s+/',' ',$value);
-  $value = $db->real_escape_string($value);
+  $value = $db->escape($value);
 
   if( strlen($value) == 0 )
   {
@@ -422,17 +519,18 @@ function db_update_role_qualifier($db,$year,$user_id,$item_id,$value)
       $result = $db->query($sql);
     }
   }
-  if( ! $result ) { bad_sql($sql); }
 }
 
-function db_update_freetext($db,$year,$user_id,$item_id,$value)
+function db_update_freetext($idb,$year,$user_id,$item_id,$value)
 {
+  $db = new LocalDB($idb);
+
   db_add_participation_history($db,$year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
   $value = preg_replace('/\s+/',' ',$value);
-  $value = $db->real_escape_string($value);
+  $value = $db->escape($value);
 
   if( strlen($value) == 0 )
   {
@@ -451,7 +549,7 @@ function db_update_freetext($db,$year,$user_id,$item_id,$value)
       values ('$user_id', $year, 0, $item_id, '$value')
           on duplicate key update text = '$value';";
   }
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 }
 
 
@@ -484,8 +582,10 @@ function db_retrieve_data($db,$year,$user_id)
   return $data;
 }
 
-function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
+function db_retrieve_data_for_user($idb,$year,$user_id,$submitted)
 {
+  $db = new LocalDB($idb);
+
   $data = array();
 
   $sql = "
@@ -495,7 +595,7 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
        and year=$year
        and submitted=$submitted";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -509,7 +609,7 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
        and year=$year
        and submitted=$submitted";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -523,7 +623,7 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
        and year=$year
        and submitted=$submitted";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -537,7 +637,7 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
        and year=$year
        and submitted=$submitted";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -554,7 +654,7 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
        and year=$year
        and submitted=$submitted";
 
-  $result = db_query($db,$sql);
+  $result = $db->query($sql);
 
   while( $row = $result->fetch_row() )
   {
@@ -564,9 +664,11 @@ function db_retrieve_data_for_user($db,$year,$user_id,$submitted)
   return $data;
 }
 
-function db_create_working_copy($db,$year,$user_id)
+function db_create_working_copy($idb,$year,$user_id)
 {
-  $result = db_query($db,"select submitted from participation_history where year=$year and user_id='$user_id'");
+  $db = new LocalDB($idb);
+
+  $result = $db->query("select submitted from participation_history where year=$year and user_id='$user_id'");
 
   $n = $result->num_rows;
   if($n>1) { return true; }
@@ -600,38 +702,42 @@ function db_create_working_copy($db,$year,$user_id)
          and user_id='$user_id'
          and submitted=1 ;";
 
-    db_query($db,$sql);
+    $db->query($sql);
   }
 
   return true;
 }
 
-function db_can_revert($db,$year,$user_id)
+function db_can_revert($idb,$year,$user_id)
 {
-  $result = db_query($db,"select submitted from participation_history where year=$year and user_id='$user_id' and submitted=1");
+  $db = new LocalDB($idb);
+
+  $result = $db->query("select submitted from participation_history where year=$year and user_id='$user_id' and submitted=1");
 
   $n = $result->num_rows;
   return $n>0;
 }
 
-function db_clone_prior_year($db,$year,$user_id)
+function db_clone_prior_year($idb,$year,$user_id)
 {
+  $db = new LocalDB($idb);
+
   // check if already have data for this user this year.  if so, we're done
 
-  $result = db_query($db,"select submitted from participation_history where year=$year and user_id='$user_id'");
+  $result = $db->query("select submitted from participation_history where year=$year and user_id='$user_id'");
 
   $n = $result->num_rows;
   if($n>0) { return; } 
 
   // check if have SUBMITTED data for this user from a prior year.  If not, we're also done
 
-  $result = db_query($db,"select max(year) from participation_history where user_id='$user_id' and submitted=1 and year<$year");
+  $result = $db->query("select max(year) from participation_history where user_id='$user_id' and submitted=1 and year<$year");
 
   $n = $result->num_rows;
   if($n<1) { return; }
 
   // if we got here, results should contain a single row containing the last year user submitted a form
-  
+
   $row = $result->fetch_row();
   $ref_year = $row[0];
 
@@ -642,7 +748,7 @@ function db_clone_prior_year($db,$year,$user_id)
   db_add_participation_history($db,$year,$user_id);
 
   // copy item level responses
-  
+
   $tables = array(
     'response_free_text',
     'response_roles',
@@ -667,7 +773,7 @@ function db_clone_prior_year($db,$year,$user_id)
          and a.user_id='$user_id'
          and a.submitted=1 ;";
 
-    db_query($db,$sql);
+    $db->query($sql);
   }
 
   // cpoy group level responses
@@ -685,31 +791,15 @@ function db_clone_prior_year($db,$year,$user_id)
          and a.user_id='$user_id'
          and a.submitted=1 ;";
 
-  db_query($db,$sql);
+  $db->query($sql);
 }
 
 
-function db_query($db,$sql)
+function db_all_results($idb,$year)
 {
-  $result = $db->query($sql);
-  if( ! $result ) 
-  { 
-    $sql = preg_replace('/\s+/',' ',$sql);
-    $sql = preg_replace('/^\s/','',$sql);
-    $sql = preg_replace('/\s$/','',$sql);
+  $db = new LocalDB($idb);
 
-    $trace = debug_backtrace();
-    $file = $trace[0]["file"];
-    $line = $trace[0]["line"];
-
-    throw new Exception("Invalid SQL: $sql  [invoked at: $file:$line]",500); 
-  }
-  return $result;
-}
-
-function db_all_results($db,$year)
-{
-  $result = db_query($db,"select group_index, label from survey_groups where year=$year");
+  $result = $db->query("select group_index, label from survey_groups where year=$year");
 
   // structure
 
@@ -723,14 +813,14 @@ function db_all_results($db,$year)
 
   $group_xref = array();
 
-  $result = db_query($db, "
+  $result = $db->query("
     select   s.item_id, s.group_index, coalesce(i.summary_label,i.label) 
     from     survey s, survey_items i
     where    year=$year
     and      i.item_id=s.item_id
     and      i.item_type='role'
     order by s.group_index,s.order_index; ");
-  
+
   $roles = array();
   while($row = $result->fetch_row())
   {
@@ -741,7 +831,7 @@ function db_all_results($db,$year)
   }
   $result->close();
 
-  $result = db_query($db,"
+  $result = $db->query("
     select   a.item_id, a.option_id, a.option_label
     from     survey s, survey_role_options a
     where    a.item_id = s.item_id
@@ -753,14 +843,14 @@ function db_all_results($db,$year)
     $roles[$item_id]['options'][$option_id] = $label;
   }
 
-  $result = db_query($db,"
+  $result = $db->query("
     select   s.item_id, s.group_index, coalesce(i.summary_label,i.label) 
     from     survey s, survey_items i
     where    s.year=$year
     and      i.item_id=s.item_id
     and      item_type='free_text'
     order by group_index,order_index; ");
-  
+
   $free_text = array();
   while($row = $result->fetch_row())
   {
@@ -772,21 +862,21 @@ function db_all_results($db,$year)
   $result->close();
 
   // responses
-  
-  $result = db_query($db,"
-  select    a.name,
-            b.item_id,
-            b.selected,
-            c.option_id,
-            b.qualifier
-  from      participants a, 
-            response_roles b 
-  left join response_role_options c 
-  on        (c.item_id=b.item_id and c.user_id=b.user_id and c.year=b.year)
-  where     b.year=$year
-  and       b.submitted=1
-  and       a.user_id=b.user_id
-  and       ( c.selected = 1 or c.selected is null ); " );
+
+  $result = $db->query("
+    select    a.name,
+              b.item_id,
+              b.selected,
+              c.option_id,
+              b.qualifier
+    from      participants a, 
+              response_roles b 
+    left join response_role_options c 
+    on        (c.item_id=b.item_id and c.user_id=b.user_id and c.year=b.year)
+    where     b.year=$year
+    and       b.submitted=1
+    and       a.user_id=b.user_id
+    and       ( c.selected = 1 or c.selected is null ); " );
 
   $response_summary = array();
   $user_responses = array();
@@ -822,16 +912,16 @@ function db_all_results($db,$year)
   }
   $result->close();
 
-  $result = db_query($db,"
-  select    a.name,
-            b.group_index,
-            b.text
-  from      participants a, 
-            response_group_comment b 
-  where     b.year=$year
-  and       a.user_id=b.user_id
-  and       b.submitted=1
-  and       b.text is not null;" );
+  $result = $db->query("
+    select    a.name,
+              b.group_index,
+              b.text
+    from      participants a, 
+              response_group_comment b 
+    where     b.year=$year
+    and       a.user_id=b.user_id
+    and       b.submitted=1
+    and       b.text is not null;" );
 
   $comment_summary = array();
   $user_comments = array();
@@ -844,16 +934,16 @@ function db_all_results($db,$year)
   $result->close();
 
 
-  $result = db_query($db,"
-  select    a.name,
-            b.item_id,
-            b.text
-  from      participants a, 
-            response_free_text b 
-  where     b.year=$year
-  and       a.user_id=b.user_id
-  and       b.submitted=1
-  and       b.text is not null;" );
+  $result = $db->query("
+    select    a.name,
+              b.item_id,
+              b.text
+    from      participants a, 
+              response_free_text b 
+    where     b.year=$year
+    and       a.user_id=b.user_id
+    and       b.submitted=1
+    and       b.text is not null;" );
 
   while($row = $result->fetch_row())
   {
@@ -864,14 +954,14 @@ function db_all_results($db,$year)
   }
   $result->close();
 
-  $result = db_query($db,"
-  select    b.item_id,
-            b.text
-  from      response_free_text b 
-  where     b.year=$year
-  and       not exists ( select * from participants a where a.user_id=b.user_id )
-  and       b.submitted=1
-  and       b.text is not null;" );
+  $result = $db->query("
+    select    b.item_id,
+              b.text
+    from      response_free_text b 
+    where     b.year=$year
+    and       not exists ( select * from participants a where a.user_id=b.user_id )
+    and       b.submitted=1
+    and       b.text is not null;" );
 
   $anonymous_summary = array();
   while($row = $result->fetch_row())

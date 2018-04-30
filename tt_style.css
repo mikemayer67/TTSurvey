@@ -570,3 +570,31 @@ div td.ttr-user-comment
   font-size:90%;
   max-width:30em;
 }
+
+button.ui-btn-inline
+{
+  padding: 1px 0.5em 1px 0.5em;
+  margin: 0 0 0 0;
+}
+
+#send-id-everyone
+{
+  margin: 0 0.5em 0 0.5em;
+}
+
+div.tt-send-id-everyone
+{
+  margin: 1em 0 1em 0;
+  font-weight:bold;
+  color:#0080a0;
+}
+div.tt-send-id-everyone .tt-failed
+{
+  font-weight:normal;
+  color:red;
+}
+div.tt-send-id-everyone .tt-empty
+{
+  font-weight:normal;
+  color:orange;
+}

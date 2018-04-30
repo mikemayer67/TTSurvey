@@ -23,3 +23,19 @@ input.ttr-valid
 {
   display:none;
 }
+
+table#tt-user-info-table
+{
+  width:auto;
+  margin-left:2em;
+}
+
+table#tt-user-info-table tr
+{
+  width:5em;
+}
+
+table#tt-user-info-table .tt-bottom-border
+{
+  border-bottom:1px solid black;
+}

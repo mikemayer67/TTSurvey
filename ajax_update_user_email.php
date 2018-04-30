@@ -38,5 +38,4 @@ catch(Exception $e)
   header( implode(' ', array( $_SERVER['SERVER_PROTOCOL'], $e->getCode(), $e->getMessage())) );
 }
 
-
 ?>

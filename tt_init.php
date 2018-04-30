@@ -10,6 +10,8 @@ $tt_email_uri = "mailto:$tt_poc_email?Subject=".urlencode("Time & Talent User ID
 $tt_poc_email_link = "<a href='$tt_email_uri'>$tt_poc</a>";
 $tt_delog     = 0;
 
+date_default_timezone_set('EST5EDT');
+
 try
 {
   $statics = db_active_survey_statics();
@@ -24,11 +26,6 @@ try
   {
     $tt_year = $_REQUEST['year'];
   }
-  else if(isset($_SESSION['YEAR'])) 
-  {
-    $tt_year = $_SESSION['YEAR'];
-  }
-  $_SESSION['YEAR'] = $tt_year;
 
   $tt_email_uri = "mailto:$tt_poc_email?Subject=".urlencode("Time & Talent User ID Request");
   $tt_poc_email_link = "<a href='$tt_email_uri'>$tt_poc</a>";
