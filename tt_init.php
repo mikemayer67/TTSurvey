@@ -10,6 +10,8 @@ $tt_email_uri = "mailto:$tt_poc_email?Subject=".urlencode("Time & Talent User ID
 $tt_poc_email_link = "<a href='$tt_email_uri'>$tt_poc</a>";
 $tt_delog     = 0;
 
+$tta_reminder_frequency = 12*3600;  // 12 hours (and yes, this is a period, not frequency)
+
 date_default_timezone_set('EST5EDT');
 
 try

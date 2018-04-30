@@ -96,13 +96,27 @@ function db_active_survey_statics($idb=null)
   return $data;
 }
 
-function db_update_statics_userids_sent($idb=null)
+function db_update_statics($key,$value,$idb=null)
 {
   $db = new LocalDB($idb);
 
-  $datetime = date('Y-m-d H:i:s');
+  if( is_string($value) )
+  {
+    $db->query("update statics set $key='$value' where active=1");
+  }
+  else
+  {
+    $db->query("update statics set $key=$value where active=1");
+  }
+}
 
-  $db->query("update statics set userids_sent='$datetime' where active=1");
+function db_update_reminder($userid,$idb=null)
+{
+  $db = new LocalDB($idb);
+
+  $now = time();
+
+  $db->query("update participants set reminder=$now where user_id='$userid'");
 }
 
 function db_userid_admin($idb=null)
@@ -115,7 +129,7 @@ function db_userid_admin($idb=null)
     select 
         user_id, 
         max(year)
-      from 
+     from 
        participation_history
      where 
        submitted = 1
@@ -134,7 +148,9 @@ function db_userid_admin($idb=null)
   foreach($ids as $id=>$year)
   {
     $info = db_user_info($id,$db);
-    $rval[] = array('id'=>$id,'name'=>$info['name'], 'email'=>$info['email'], 'year'=>$year);
+    $info['id']=$id;
+    $info['year']=$year;
+    $rval[] = $info;
   }
 
   return $rval;
@@ -166,7 +182,7 @@ function db_user_info($id,$idb=null)
 
     $id = strtoupper($id);
 
-    $sql = "select name,email from participants where user_id='$id'";
+    $sql = "select name,email,reminder from participants where user_id='$id'";
     $result = $db->query($sql);
 
     $n = $result->num_rows;

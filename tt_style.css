@@ -582,19 +582,3 @@ button.ui-btn-inline
   margin: 0 0.5em 0 0.5em;
 }
 
-div.tt-send-id-everyone
-{
-  margin: 1em 0 1em 0;
-  font-weight:bold;
-  color:#0080a0;
-}
-div.tt-send-id-everyone .tt-failed
-{
-  font-weight:normal;
-  color:red;
-}
-div.tt-send-id-everyone .tt-empty
-{
-  font-weight:normal;
-  color:orange;
-}

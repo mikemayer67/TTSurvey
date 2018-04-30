@@ -1,5 +1,8 @@
 <?php
 
+$dir = dirname(__FILE__);
+
+require_once("$dir/db.php");
 
 function email_welcome_info($uid,$name,$email,$year)
 {
@@ -53,12 +56,13 @@ function email_welcome_info($uid,$name,$email,$year)
 
     if( mail($to,$subject,$message,$headers) )
     {
+      db_update_reminder($uid);
       error_log("Welcome email sent to $name ($to)");
       $rval = true;
     }
     else
     {
-      error_log("Failed to sedn email to $name ($to)");
+      error_log("Failed to send email to $name ($to)");
     }
   }
   else

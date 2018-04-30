@@ -7,52 +7,58 @@ require_once("$dir/sendmail.php");
 
 try
 {
-  if( ! isset($_SESSION['USER_ID'] ) )
+  if( ! isset($_SESSION['tta_passwd'] ) )
   {
-    throw new Exception('Session missing user ID',500);
+    throw new Exception('Admin password not specified',500);
   }
 
   if( ! isset($_REQUEST['year'] ) )
   {
-    throw new Exception('Session missing user ID',500);
+    throw new Exception('Request is missing year',500);
   }
 
   $year = $_REQUEST['year'];
+  $now = time();
 
-  $sent = array();
-  $failed = array();
+  $reply = array( 'sent' => array(), 'failed'=>array(), 'noemail'=>array(), 'toosoon'=>array(), 'sentids' => array() );
 
   $user_info = db_userid_admin();
 
   foreach ( $user_info as $info )
   {
-    $email = $info['email'];
-    $name = $info['name'];
+    $id            = $info['id'];
+    $email         = $info['email'];
+    $name          = $info['name'];
+    $last_reminder = $info['reminder'];
+
+    $status = 'failed';
     if( is_null($email) || strlen($email)==0 )
     {
-      $noemail[] = $name;
+      $status = 'noemail';
+    }
+    else if( is_null($last_reminder) || $now > $last_reminder + $tta_reminder_frequency )
+    {
+      if( email_welcome_info($id,$name,$email,$year) ) 
+      {
+        $status = 'sent';
+        $reply['sentids'][] = $id;
+      }
     }
     else
     {
-      if( email_welcome_info($info['id'],$name,$email,$year) )
-      {
-        $sent[] = "$name<$email>";
-      }
-      else
-      {
-        $failed[] = "$name<$email>";
-      }
+      $status = 'toosoon';
     }
+
+    $reply[$status][] = $name;
   }
 
   header($_SERVER['SERVER_PROTOCOL'].' 200 User IDs sent');
   header('Content-Type: application/json');
 
-  $timestamp = date('l, F j, Y \a\t h:i:s a', time());
+  db_update_statics('welcome_sent',$now);
 
-  db_update_statics_userids_sent();
+  $reply['time'] = date('M j \a\t h:i a', $now);
 
-  $reply = array('sent'=>$sent, 'noemail'=>$noemail, 'failed'=>$failed, 'timestamp'=>$timestamp);
   echo json_encode($reply);
 }
 catch(Exception $e)

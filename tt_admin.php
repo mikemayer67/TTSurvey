@@ -38,8 +38,8 @@ $statics = db_active_survey_statics($db);
 
 <div class='ui-field-contain tt-send-id-everyone'>
 <?php 
-$userids_sent = $statics['userids_sent'];
-if( is_null($userids_sent) ) 
+$welcome_sent = $statics['welcome_sent'];
+if( is_null($welcome_sent) ) 
 { 
   print "Click";
   print "<button id='send-id-everyone' data-year='$tt_active_year' class='ui-btn-inline ui-btn'>here</button>";
@@ -47,8 +47,8 @@ if( is_null($userids_sent) )
 } 
 else 
 {
-  $userids_sent = date('l, F j, Y \a\t h:i:s a', strtotime($userids_sent));
-  print "<span>User ID reminders were sent out to everyone on: $userids_sent</span>\n";
+  $welcome_sent = date('l, F j, Y \a\t h:i:s a', $welcome_sent);
+  print "<span>User ID reminders were sent out to everyone on: $welcome_sent</span>\n";
 }
 ?>
 </div>
@@ -66,21 +66,43 @@ else
 $user_info = db_userid_admin($db);
 usort( $user_info, 'idsByLastNameSort' );
 
+$now = time();
+
 foreach ( $user_info as $info )
 {
-  print "<tr class='tt-bottom-border'><td>";
-  print $info['name'];
-  print "</td><td>";
-  print $info['id'];
-  print "</td><td>";
-  print $info['email'];
-  print "</td><td>";
-  print $info['year'];
-  print "</td><td><div class='tt-admin-user-actions'>";
-  print "<button class='ui-btn-inline ui-btn ui-mini'>send ID</button>";
-  print "<button class='ui-btn-inline ui-btn ui-mini'>fix name</button>";
-  print "<button class='ui-btn-inline ui-btn ui-mini'>fix email</button>";
-  print "</div></td></tr>\n";
+  $id    = $info['id'];
+  $name  = $info['name'];
+  $email = $info['email'];
+  $year  = $info['year'];
+  $last_reminder = $info['reminder'];
+
+  $disabled = '';
+  if( is_null($email) )
+  {
+    $disabled = "no email";
+  }
+  if( ! is_null($last_reminder) ) 
+  {
+    $next_reminder = $last_reminder + $tta_reminder_frequency;
+    if( $now < $next_reminder ) 
+    {
+      $disabled = "last sent " . date('M j \a\t h:i a', $last_reminder);
+    }
+  }
+
+  print "<tr id='tta-user-info-$id' class='tt-bottom-border'>";
+  print "<td>$name</td>";
+  print "<td>$id</td>";
+  print "<td>$email</td>";
+  print "<td>$year</td>";
+  print "<td><div class='tt-admin-user-actions'>";
+  print "<button class='ui-btn-inline ui-btn ui-mini tta-send-id' data-id='$id'";
+  if( strlen($disabled)>0 ) { print " disabled='true'"; }
+  print ">send ID</button>";
+  print "<button class='ui-btn-inline ui-btn ui-mini tta-fix-name' data-id='$id'>fix name</button>";
+  print "<button class='ui-btn-inline ui-btn ui-mini tta-fix-email' data-id='$id'>fix email</button>";
+  print "</div></td>";
+  print "<td class='tta-nosend-rationale'>$disabled</td></tr>\n";
 }
 
 ?>

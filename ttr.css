@@ -39,3 +39,31 @@ table#tt-user-info-table .tt-bottom-border
 {
   border-bottom:1px solid black;
 }
+
+div.tta-email-sent
+{
+  margin: 1em 0 1em 0;
+  color:#0080a0;
+}
+div.tta-too-soon
+{
+  margin: 1em 0 1em 0;
+  color:purple;
+}
+div.tta-no-email-address
+{
+  margin: 1em 0 1em 0;
+  color:orange;
+}
+div.tta-email-failed
+{
+  margin: 1em 0 1em 0;
+  font-weight:bold;
+  color:red;
+}
+.tta-nosend-rationale
+{
+  font-size:90%;
+  font-style:italic;
+  color:#ff7000;
+}
