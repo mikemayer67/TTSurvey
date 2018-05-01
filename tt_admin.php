@@ -86,21 +86,21 @@ foreach ( $user_info as $info )
     $next_reminder = $last_reminder + $tta_reminder_frequency;
     if( $now < $next_reminder ) 
     {
-      $disabled = "last sent " . date('M j \a\t h:i a', $last_reminder);
+      $disabled = "sent " . date('M j \a\t h:i a', $last_reminder);
     }
   }
 
-  print "<tr id='tta-user-info-$id' class='tt-bottom-border'>";
+  print "<tr class='tta-userid tt-bottom-border' data-id='$id'>";
   print "<td>$name</td>";
   print "<td>$id</td>";
   print "<td>$email</td>";
   print "<td>$year</td>";
   print "<td><div class='tt-admin-user-actions'>";
-  print "<button class='ui-btn-inline ui-btn ui-mini tta-send-id' data-id='$id'";
+  print "<button class='ui-btn-inline ui-btn ui-mini tta-send-id'";
   if( strlen($disabled)>0 ) { print " disabled='true'"; }
   print ">send ID</button>";
-  print "<button class='ui-btn-inline ui-btn ui-mini tta-fix-name' data-id='$id'>fix name</button>";
-  print "<button class='ui-btn-inline ui-btn ui-mini tta-fix-email' data-id='$id'>fix email</button>";
+  print "<button class='ui-btn-inline ui-btn ui-mini tta-fix-name'>fix name</button>";
+  print "<button class='ui-btn-inline ui-btn ui-mini tta-fix-email'>fix email</button>";
   print "</div></td>";
   print "<td class='tta-nosend-rationale'>$disabled</td></tr>\n";
 }

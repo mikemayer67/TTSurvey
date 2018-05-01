@@ -52,13 +52,12 @@ try
     $reply[$status][] = $name;
   }
 
-  header($_SERVER['SERVER_PROTOCOL'].' 200 User IDs sent');
-  header('Content-Type: application/json');
-
   db_update_statics('welcome_sent',$now);
 
   $reply['time'] = date('M j \a\t h:i a', $now);
 
+  header($_SERVER['SERVER_PROTOCOL'].' 200 User IDs sent');
+  header('Content-Type: application/json');
   echo json_encode($reply);
 }
 catch(Exception $e)

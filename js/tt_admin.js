@@ -64,23 +64,24 @@ function send_id_everyone()
 
       sentids = data['sentids'];
       if( sentids.length > 0 ) {
-        last_sent = 'last sent ' + data['time'];
+        last_sent = 'sent ' + data['time'];
         for( var i=0; i<sentids.length; i++ ) {
-          rid = '#tta-user-info-' + sentids[i];
-          $(rid + ' .tta-nosend-rationale').empty().append(last_sent);
-          $(rid + ' .tta-send-id').attr('disabled',true);
+          id = sentids[i];
+          key = "tr.tta-userid[data-id='" + sentids[i] + "']";
+          $(key + ' .tta-nosend-rationale').empty().append(last_sent);
+          $(key + ' .tta-send-id').attr('disabled',true);
         }
       }
 
     } )
-    .fail( function() {
-      alert('Failed to email user ID');
+    .fail( function(jqXHR, textStatus, errorCode) {
+      alert('Failed to email user ID [' + errorCode + ']: ' + textStatus);
     } );
 }
 
 function tta_send_userid()
 {
-  userid = $(this).data('id');
+  userid = $(this).closest('tr').data('id');
 
   $.ajax( {
     type: 'POST',
@@ -88,10 +89,13 @@ function tta_send_userid()
     data: { userid: userid },
   } )
     .done( function(data) {
-      alert('Email sent');
+      key = "tr.tta-userid[data-id='" + userid + "']";
+      $(key + ' .tta-nosend-rationale').empty().append('sent ' + data['time']);
+      $(key + ' .tta-send-id').attr('disabled',true);
+
     } )
-    .fail( function() {
-      alert('Failed to email user ID');
+    .fail( function(jqXHR, textStatus, errorCode) {
+      alert('Failed to email user ID [' + errorCode + ']: ' + textStatus);
     } );
 }
 
