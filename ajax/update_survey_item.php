@@ -1,7 +1,7 @@
 <?php
 
-require_once(dirname(__FILE__).'/tt_init.php');
-require_once(dirname(__FILE__).'/gen_user_id.php');
+require_once(dirname(__FILE__).'/../tt_init.php');
+require_once(dirname(__FILE__).'/../gen_user_id.php');
 
 try
 {

@@ -150,7 +150,7 @@ function submit_user_name()
  
   $.ajax( {
     type: 'POST',
-    url:  'ajax_update_user_name.php',
+    url:  'ajax/update_user_name.php',
     data: { user_name: name },
   } )
     .done( function() {
@@ -177,7 +177,7 @@ function submit_user_email()
 
   $.ajax( {
     type: 'POST',
-    url:  'ajax_update_user_email.php',
+    url:  'ajax/update_user_email.php',
     data: { user_email: email },
   } )
     .done( function() {
@@ -238,7 +238,7 @@ function submit_checkbox_item()
   if( keys[0] !== 'anon' )  {
     $.ajax( {
       type: 'POST',
-      url:  'ajax_update_survey_item.php',
+      url:  'ajax/update_survey_item.php',
       data: { keys: keys, value: value },
     } );
   }
@@ -257,7 +257,7 @@ function submit_text_item()
 
     $.ajax( {
       type: 'POST',
-      url:  'ajax_update_survey_item.php',
+      url:  'ajax/update_survey_item.php',
       data: { keys: keys, value: value },
     } );
   }
@@ -267,7 +267,7 @@ function reload_data()
 {
   $.ajax( {
     type: 'POST',
-    url:  'ajax_reload_data.php',
+    url:  'ajax/reload_data.php',
     data: {}
   } )
   .done( function(data) {

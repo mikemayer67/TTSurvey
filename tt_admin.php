@@ -41,6 +41,16 @@ $statics = db_active_survey_statics($db);
 </div>
 </div>
 
+
+<div id="tta-fix-name-popup" data-role='popup' class='ui-content tta-popup' data-overlay-theme='b'>
+<div>
+<label>Change name for <span id='tta-fix-name-old'>???</span>:</label>
+<input id='tta-fix-name-new' type='text' value="???"/>
+<div>
+<button class='tta-cancel' data-inline='true'>Cancel</button>
+<button class='tta-ok' data-inline='true' disabled='true'>OK</button>
+</div>
+</div>
 </div>
 
 
@@ -105,10 +115,10 @@ foreach ( $user_info as $info )
   }
 
   print "<tr class='tta-userid tt-bottom-border' data-id='$id' data-name='$name' data-email='$email'>";
-  print "<td class='tta-name'>$name</td>";
-  print "<td class='tta-id'>$id</td>";
+  print "<td class='tta-name'><span>$name</span></td>";
+  print "<td class='tta-id'><span>$id</span></td>";
   print "<td class='tta-email'><span>$email</span></td>";
-  print "<td class='tta-year'>$year</td>";
+  print "<td class='tta-year'><span>$year</span></td>";
   print "<td><div class='tt-admin-user-actions'>";
   print "<button class='ui-btn-inline ui-btn ui-mini tta-send-id'";
   if( strlen($disabled)>0 ) { print " disabled='true'"; }

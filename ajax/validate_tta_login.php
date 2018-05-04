@@ -1,11 +1,10 @@
 <?php
 
-session_start();
-
-require_once(dirname(__FILE__).'/db.php');
+require_once(dirname(__FILE__).'/../tt_init.php');
+require_once(dirname(__FILE__).'/../db.php');
 
 $statics = db_active_survey_statics();
-$result_pwd = $statics['result_pwd'];
+$result_pwd = $statics['admin_pwd'];
 
 $valid_password = false;
 

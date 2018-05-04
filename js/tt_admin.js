@@ -5,11 +5,16 @@ $(function() {
   $('button.tta-fix-name').on('click',tta_fix_name);
   $('button.tta-fix-email').on('click',tta_fix_email);
 
+  $('#tta-fix-email-popup button.tta-ok').on('click', tta_fix_user_email);
+  $('#tta-fix-name-popup button.tta-ok').on('click', tta_fix_user_name);
+
   $('#tta-fix-email-popup button.tta-cancel').on('click', function() { 
     $('#tta-fix-email-popup').popup("close"); 
   } );
 
-  $('#tta-fix-email-popup button.tta-ok').on('click', tta_fix_user_email);
+  $('#tta-fix-name-popup button.tta-cancel').on('click', function() { 
+    $('#tta-fix-name-popup').popup("close"); 
+  } );
 });
 
 function send_id_everyone()
@@ -18,7 +23,7 @@ function send_id_everyone()
 
   $.ajax( {
     type: 'POST',
-    url: "ajax_send_all_userids.php",
+    url: "ajax/send_all_userids.php",
     data: { year: year },
   } )
     .done( function(data) {
@@ -90,7 +95,7 @@ function tta_send_userid()
 
   $.ajax( {
     type: 'POST',
-    url: "ajax_send_userid.php",
+    url: "ajax/send_userid.php",
     data: { userid: userid },
   } )
     .done( function(data) {
@@ -106,8 +111,17 @@ function tta_send_userid()
 
 function tta_fix_name()
 {
-  userid = $(this).closest('tr').data('id');
-  alert('fix_name: '+userid);
+  tr = $(this).closest('tr');
+  user_id = tr.data('id');
+  user_name = tr.data('name');
+  $('#tta-fix-name-old').empty().append(user_name);
+  $('#tta-fix-name-new').val(user_name);
+  $('#tta-fix-name-popup').popup("option",'dismissible',false).popup('open');
+
+  $('#tta-fix-name-new').data('id',user_id).data('old_name',user_name);
+
+  tta_validate_user_name();
+  $('#tta-fix-name-new').on('input',tta_validate_user_name);
 }
 
 function tta_fix_email()
@@ -124,6 +138,30 @@ function tta_fix_email()
 
   tta_validate_user_email();
   $('#tta-fix-email-new').on('input',tta_validate_user_email);
+}
+
+function tta_validate_user_name()
+{
+  var valid = /^\s*([a-z]+[a-z\.])(\s+[a-z]+[a-z\.])*\s*$/gi;
+  var invalid = /[~a-z\.]|\.[a-z\.]/;
+
+  var input = $('#tta-fix-name-new');
+  var name  = input.val();
+
+  var old_name = $('#tta-fix-name-new').data('old_name');
+
+  ok = $('#tta-fix-name-popup button.tta-ok');
+
+  if(valid.test(name)) {
+    tta_set_state(input,'tta-valid');
+    ok.prop('disabled',name===old_name);
+  } else if ( invalid.test(name) ) {
+    ok.prop('disabled',true);
+    tta_set_state(input,'tta-invalid');
+  } else {
+    ok.prop('disabled',true);
+    tta_set_state(input,'tta-pending');
+  }
 }
 
 function tta_validate_user_email()
@@ -153,6 +191,30 @@ function tta_validate_user_email()
   }
 }
 
+function tta_fix_user_name()
+{
+  var input = $('#tta-fix-name-new');
+  var name  = input.val();
+  var id    = input.data('id');
+  
+  $.ajax( {
+    type: 'POST',
+    url:  'ajax/fix_user_name.php',
+    data: { user_id: id, user_name: name },
+  } )
+    .done( function() {
+      tr  = $("tr[data-id='"+id+"']");
+      tde = tr.find('td.tta-name').find('span').text(name)
+      tr.data('name',name);
+    } )
+    .fail( function() {
+      alert('Failed to update name for '+id+' to '+name);
+    } )
+    .always( function() {
+      $('#tta-fix-name-popup').popup("close"); 
+    } );
+}
+
 function tta_fix_user_email()
 {
   var input = $('#tta-fix-email-new');
@@ -162,7 +224,7 @@ function tta_fix_user_email()
   
   $.ajax( {
     type: 'POST',
-    url:  'ajax_fix_user_email.php',
+    url:  'ajax/fix_user_email.php',
     data: { user_id: id, user_email: email },
   } )
     .done( function() {

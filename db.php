@@ -208,6 +208,7 @@ function db_update_user_name($id,$name)
     $db = new LocalDB();
 
     $id = strtoupper($id);
+    $name = trim($name);
 
     $sql = "update participants set name='$name' where user_id='$id'";
     $rval = $db->query($sql);
@@ -228,6 +229,7 @@ function db_update_user_email($id,$email)
     $db = new LocalDB();
 
     $id = strtoupper($id);
+    $email = trim($email);
 
     $sql = "update participants set email='$email' where user_id='$id'";
     $rval = $db->query($sql);

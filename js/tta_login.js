@@ -22,7 +22,7 @@ function validate_passwd()
     $('#tta-login-submit').hide();
     $.ajax( {
       type: 'POST',
-      url: 'ajax_validate_tta_login.php',
+      url: 'ajax/validate_tta_login.php',
       data: { value: passwd },
     })
     .done( function(data) {

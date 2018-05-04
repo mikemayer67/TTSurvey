@@ -1,9 +1,7 @@
 <?php
 
-$dir = dirname(__FILE__);
-
-require_once("$dir/tt_init.php");
-require_once("$dir/sendmail.php");
+require_once(dirname(__FILE__).'/../tt_init.php');
+require_once(dirname(__FILE__).'/../sendmail.php');
 
 try
 {

@@ -18,7 +18,7 @@ function validate_passwd()
     $('#ttr-login-submit').hide();
     $.ajax( {
       type: 'POST',
-      url: 'ajax_validate_ttr_login.php',
+      url: 'ajax/validate_ttr_login.php',
       data: { value: passwd },
     })
     .done( function(data) {
