@@ -59,7 +59,7 @@ try
       }
 
       setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
-      $page = 'survey';
+      $page = 'tt_survey';
     }
 
   }
@@ -79,13 +79,13 @@ try
       error_log("Attempt to submit survey with invalid or mismateched user ID: \n  POST=$user_id  SESSION=".$_SESSION['USER_ID']);
       throw new Exception('Invalid user', 500);
     }
-    $page = 'survey_submitted';
+    $page = 'tt_survey_submitted';
   }
   else if( isset($_SESSION['USER_ID']) )
   {
     $user_id = $_SESSION['USER_ID'];
     setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
-    $page = 'survey';
+    $page = 'tt_survey';
   }
   else if (isset($_COOKIE['_tt_uid']) )
   {

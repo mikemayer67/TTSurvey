@@ -67,3 +67,28 @@ div.tta-email-failed
   font-style:italic;
   color:#ff7000;
 }
+
+.tta-popup input
+{
+  width:20em;
+}
+
+.tta-popup .ui-input-text
+{
+  margin: 0 0 1.5em 0;
+}
+
+button.tta-ok
+{
+  float:right;
+}
+
+input.tta-invalid
+{
+  border: 2px solid red;
+  color:red;
+}
+input.tta-pending
+{
+  border: 2px solid orange;
+}

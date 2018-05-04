@@ -17,7 +17,7 @@ try
   db_clone_prior_year($db,$tt_year,$user_uid);
 ?>
 
-<script src="js/survey.js?v=<?=rand()?>"></script>
+<script src="js/tt_survey.js?v=<?=rand()?>"></script>
 
 </head>
 

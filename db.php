@@ -69,7 +69,7 @@ class LocalDB {
        and year=$year 
        and submitted=$submitted;";
 
-    $result = query($sql);
+    $result = $this->query($sql);
   }
 
   public function escape($value)

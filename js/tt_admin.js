@@ -5,6 +5,11 @@ $(function() {
   $('button.tta-fix-name').on('click',tta_fix_name);
   $('button.tta-fix-email').on('click',tta_fix_email);
 
+  $('#tta-fix-email-popup button.tta-cancel').on('click', function() { 
+    $('#tta-fix-email-popup').popup("close"); 
+  } );
+
+  $('#tta-fix-email-popup button.tta-ok').on('click', tta_fix_user_email);
 });
 
 function send_id_everyone()
@@ -101,10 +106,80 @@ function tta_send_userid()
 
 function tta_fix_name()
 {
-  alert('fix_name: '+id);
+  userid = $(this).closest('tr').data('id');
+  alert('fix_name: '+userid);
 }
 
 function tta_fix_email()
 {
-  alert('fix_email: '+id);
+  tr = $(this).closest('tr');
+  user_id = tr.data('id');
+  user_name = tr.data('name');
+  user_email = tr.data('email');
+  $('#tta-fix-email-name').empty().append(user_name);
+  $('#tta-fix-email-new').val(user_email);
+  $('#tta-fix-email-popup').popup("option",'dismissible',false).popup('open');
+
+  $('#tta-fix-email-new').data('id',user_id).data('name',user_name).data('old_email',user_email);
+
+  tta_validate_user_email();
+  $('#tta-fix-email-new').on('input',tta_validate_user_email);
 }
+
+function tta_validate_user_email()
+{
+  var valid   = /^\s*([\w-]*\w\.)*[\w-]*\w@(\w+\.)+(com|net|gov|edu)\s*$/;
+  var partial = /^\s*[\w.-]*@*[\w.]*\s*$/;
+
+  var input   = $('#tta-fix-email-new');
+  var email   = input.val();
+
+  var old_email = $('#tta-fix-email-new').data('old_email');
+
+  email_is_good = valid.test(email);
+
+  ok = $('#tta-fix-email-popup button.tta-ok');
+  if(email_is_good) {
+    tta_set_state(input,'tta-valid');
+    ok.prop('disabled',email===old_email);
+  } else {
+    ok.prop('disabled',true);
+
+    if( partial.test(email) ) {
+      tta_set_state(input,'tta-pending');
+    } else {
+      tta_set_state(input,'tta-invalid');
+    }
+  }
+}
+
+function tta_fix_user_email()
+{
+  var input = $('#tta-fix-email-new');
+  var email = input.val();
+  var id    = input.data('id');
+  var name  = input.data('name');
+  
+  $.ajax( {
+    type: 'POST',
+    url:  'ajax_fix_user_email.php',
+    data: { user_id: id, user_email: email },
+  } )
+    .done( function() {
+      tr  = $("tr[data-id='"+id+"']");
+      tde = tr.find('td.tta-email').find('span').text(email)
+      tr.data('email',email);
+    } )
+    .fail( function() {
+      alert('Failed to update email for '+name+'('+id+')');
+    } )
+    .always( function() {
+      $('#tta-fix-email-popup').popup("close"); 
+    } );
+}
+
+function tta_set_state(item,state)
+{
+  item.removeClass('tta-valid').removeClass('tta-invalid').removeClass('tta-pending').addClass(state);
+}
+
