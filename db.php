@@ -210,7 +210,7 @@ function db_update_user_name($id,$name)
     $id = strtoupper($id);
     $name = trim($name);
 
-    $sql = "update participants set name='$name' where user_id='$id'";
+    $sql = "update participants set name='$name',reminder=NULL where user_id='$id'";
     $rval = $db->query($sql);
   }
   catch(Exception $e)
@@ -231,7 +231,7 @@ function db_update_user_email($id,$email)
     $id = strtoupper($id);
     $email = trim($email);
 
-    $sql = "update participants set email='$email' where user_id='$id'";
+    $sql = "update participants set email='$email',reminder=NULL where user_id='$id'";
     $rval = $db->query($sql);
   }
   catch(Exception $e)

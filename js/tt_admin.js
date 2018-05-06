@@ -204,7 +204,9 @@ function tta_fix_user_name()
   } )
     .done( function() {
       tr  = $("tr[data-id='"+id+"']");
-      tde = tr.find('td.tta-name').find('span').text(name)
+      tr.find('td.tta-name').find('span').text(name);
+      tr.find('button.tta-send-id').attr('disabled',false);;
+      tr.find('td.tta-nosend-rationale').empty();
       tr.data('name',name);
     } )
     .fail( function() {
@@ -229,7 +231,9 @@ function tta_fix_user_email()
   } )
     .done( function() {
       tr  = $("tr[data-id='"+id+"']");
-      tde = tr.find('td.tta-email').find('span').text(email)
+      tr.find('td.tta-email').find('span').text(email)
+      tr.find('button.tta-send-id').attr('disabled',false);;
+      tr.find('td.tta-nosend-rationale').empty();
       tr.data('email',email);
     } )
     .fail( function() {

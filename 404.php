@@ -15,8 +15,8 @@ require_once(dirname(__FILE__).'/tt_init.php');
 
 <h2>What happened?</h2>
 <ul>
-<li>If you followed a link emailed to you, please contact <?=$tt_poc_email_link?> to get a valid link.</li>
-<li>If you were just working inside <?=$tt_title?>, there is an internal error.  Please contact <?=$tt_poc_email_link?> to get this fixed.</li>
+<li>If you followed a link emailed to you, please contact <?=$tt_admin_email_link?> to get a valid link.</li>
+<li>If you were just working inside <?=$tt_title?>, there is an internal error.  Please contact <?=$tt_admin_email_link?> to get this fixed.</li>
 <li>If you entered this URL directly in your browser, you now know it doesn't work.</li>
 </ul>
 

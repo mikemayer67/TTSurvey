@@ -8,7 +8,8 @@ function email_welcome_info($uid,$name,$email,$year)
 {
   global $tt_root_url;
   global $tt_active_year;
-  global $tt_poc;
+  global $tt_chair;
+  global $tt_admin_email_link;
 
   $rval = false;
 
@@ -41,8 +42,9 @@ function email_welcome_info($uid,$name,$email,$year)
       <div><br></div>
       </blockquote>
       Thank you,
-      <div><i>$tt_poc</i></div>
+      <div><i>$tt_chair</i></div>
       <div><br></div>
+      <div>For technical assistance with the online form, contact $tt_admin_email_link</div>
       </body>
       </html>
       ";
@@ -106,8 +108,9 @@ function email_account_info($uid,$name,$email,$aid)
       <div><br></div>
       </blockquote>
       Thank you,
-      <div><i>$tt_poc</i></div>
+      <div><i>$tt_chair</i></div>
       <div><br></div>
+      <div>For technical assistance with the online form, contact $tt_admin_email_link</div>
       </body>
       </html>
       ";
