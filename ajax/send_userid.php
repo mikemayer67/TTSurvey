@@ -31,13 +31,11 @@ try
 
   if( ! is_null($last_reminder) )
   {
-    error_log("asup: $name ($last_reminder) $now");
     if( $now < $last_reminder + 86400 )
     {
       throw new Exception("Reminder to $name sent less than 1 day ago", 418);
     }
   }
-  error_log("asup: $name ok to send");
 
   if( ! email_welcome_info($userid,$name,$user_info['email'],$tt_active_year) )
   {

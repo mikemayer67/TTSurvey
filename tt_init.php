@@ -10,7 +10,7 @@ require_once(dirname(__FILE__).'/db.php');
 $tt_admin       = 'Mike Mayer';
 $tt_admin_email = 'mikemayer67@vmwishes.com';
 $tt_admin_uri   = "mailto:$tt_admin_email?Subject=".urlencode("Time & Talent Issue");
-$tt_admin_email_link = "<a href='$tt_email_uri'>$tt_admin</a>";
+$tt_admin_email_link = "<a href='$tt_admin_uri'>$tt_admin</a>";
 
 $tt_delog       = 0;
 
@@ -33,26 +33,28 @@ try
   $chair_info = db_user_info($tt_chair_id);
   $admin_info = db_user_info($tt_admin_id);
 
-  $tt_chair = $chair_info['name'];
   $tt_admin = $admin_info['name'];
-  $tt_poc   = ( $tt_chair === $ttadmin ? $tt_chair : ($tt_chair . ' and ' . $tt_admin) );
+  $tt_chair = $chair_info['name'];
 
-  if( $tt_poc_email === NULL ) $tt_poc_email = $admin_info['email'];
-  if( $tt_poc_email === NULL ) $tt_poc_email = $chair_info['email'];
+  $tt_admin_email = $admin_info['email'];
+  $tt_chair_email = $chair_info['email'];
+
+  if( $tt_chair === $tt_admin ) { $tt_poc = $tt_admin; }
+  else                          { $tt_poc = "$tt_chair and $tt_admin"; }
+
+  if( $tt_poc_email === NULL ) $tt_poc_email = $tt_admin_email;
+  if( $tt_poc_email === NULL ) $tt_poc_email = $tt_chair_email;
 
   $tt_year = $tt_active_year;
-  if(isset($_REQUEST['year']))
-  {
-    $tt_year = $_REQUEST['year'];
-  }
+  if(isset($_REQUEST['year'])) { $tt_year = $_REQUEST['year']; }
 
-  $tt_poc_email_uri = "mailto:$tt_poc_email?Subject=".urlencode("$tt_active_year Time & Talent Inquiry"); 
+  $tt_poc_email_uri = "mailto:$tt_poc_email?Subject=".urlencode("$tt_active_year Time & Talent Survey"); 
   $tt_poc_email_link = "<a href='$tt_poc_email_uri'>$tt_poc</a>";
 
-  $tt_chair_email_uri = "mailto:$tt_chair_email?Subject=".urlencode("$tt_active_year Time & Talent Inquiry");
+  $tt_chair_email_uri = "mailto:$tt_chair_email?Subject=".urlencode("$tt_active_year Time & Talent Survey");
   $tt_chair_email_link = "<a href='$tt_chair_email_uri'>$tt_chair</a>";
 
-  $tt_admin_email_uri = "mailto:$tt_admin_email?Subject=".urlencode("$tt_active_year Time & Talent Inquiry");
+  $tt_admin_email_uri = "mailto:$tt_admin_email?Subject=".urlencode("$tt_active_year Time & Talent Survey");
   $tt_admin_email_link = "<a href='$tt_admin_email_uri'>$tt_admin</a>";
 
   $tt_title      = "CTS $tt_year Time &amp; Talent Survey";

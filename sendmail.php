@@ -54,7 +54,7 @@ function email_welcome_info($uid,$name,$email,$year)
     $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 
     // More headers
-    $headers .= 'From: <stewardship@ctslutheranelca.org>' . "\r\n";
+    $headers .= 'From: <tt@ctslutheranelca.org>' . "\r\n";
 
     if( mail($to,$subject,$message,$headers) )
     {
@@ -70,6 +70,207 @@ function email_welcome_info($uid,$name,$email,$year)
   else
   {
     error_log("No welcome email sent to $name ... no email address");
+  }
+
+  return $rval;
+}
+
+function email_survey_reminder($uid,$name,$email,$year)
+{
+  global $tt_root_url;
+  global $tt_active_year;
+  global $tt_chair;
+  global $tt_admin_email_link;
+
+  $rval = false;
+
+  if( isset($email) && strlen($email)>0 )
+  {
+    $to = $email;
+    $subject = "Time & Talent Survey Reminder";
+
+    $url = "$tt_root_url/tt.php?uid=$uid";
+
+    $message = "
+      <html>
+      <head>
+      <meta http-equiv='Content-Type' content='text/html charset=us-ascii'>
+      </head>
+      <body style='word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;'>
+      <div><br></div>
+      <div>It's not too late to participate in the $year Time &amp; Talent survey.</div>
+      <div><br></div>
+      <div>You can start your survey using the following link: <a href='$url'>$url</a></div>
+      <div><br></div>
+      <div>Using this link will prepopulate the survey with your responses from last year where applicable.</div>
+      <div><br></div>
+
+      </blockquote>
+      Thank you,
+      <div><i>$tt_chair</i></div>
+      <div><br></div>
+      <div>For technical assistance with the online form, contact $tt_admin_email_link</div>
+      </body>
+      </html>
+      ";
+
+    // Always set content-type when sending HTML email
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+    // More headers
+    $headers .= 'From: <tt@ctslutheranelca.org>' . "\r\n";
+
+    if( mail($to,$subject,$message,$headers) )
+    {
+      db_update_reminder($uid);
+      error_log("Survey reminder sent to $name ($to)");
+      $rval = true;
+    }
+    else
+    {
+      error_log("Failed to send survey reminder to $name ($to)");
+    }
+  }
+  else
+  {
+    error_log("No survey reminder sent to $name ... no email address");
+  }
+
+  return $rval;
+}
+
+function email_unsubmitted_update_notifications($uid,$name,$email,$year)
+{
+  global $tt_root_url;
+  global $tt_active_year;
+  global $tt_chair;
+  global $tt_admin_email_link;
+
+  $rval = false;
+
+  if( isset($email) && strlen($email)>0 )
+  {
+    $to = $email;
+    $subject = "Unsubmitted Time & Talent Updates";
+
+    $url = "$tt_root_url/tt.php?uid=$uid";
+
+    $message = "
+      <html>
+      <head>
+      <meta http-equiv='Content-Type' content='text/html charset=us-ascii'>
+      </head>
+      <body style='word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;'>
+      <div><br></div>
+      <div>It appears that you made some changes on your $year Time &amp; Talent survey after submitting it.
+      These changes will <b>not</b> be included in the summary report that will be made available to 
+      council and coordinators unless you return to the form and hit the submit button (at the bottom of 
+      the form).</div>
+      <div><br></div>
+      <div>You can revisit your survey using the following link: <a href='$url'>$url</a></div>
+      <div><br></div>
+      <div>If you had annonymous comments, you will need to find the email sent when you first
+      submitted your responses.  There is no other way to reconnect you with your anonymous responses.</div>
+      <div><br></div>
+
+      </blockquote>
+      Thank you,
+      <div><i>$tt_chair</i></div>
+      <div><br></div>
+      <div>For technical assistance with the online form, contact $tt_admin_email_link</div>
+      </body>
+      </html>
+      ";
+
+    // Always set content-type when sending HTML email
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+    // More headers
+    $headers .= 'From: <tt@ctslutheranelca.org>' . "\r\n";
+
+    if( mail($to,$subject,$message,$headers) )
+    {
+      db_update_reminder($uid);
+      error_log("Unsubmitted updates email sent to $name ($to)");
+      $rval = true;
+    }
+    else
+    {
+      error_log("Failed to send unsubmitted updates to $name ($to)");
+    }
+  }
+  else
+  {
+    error_log("No unsubmitted updates email sent to $name ... no email address");
+  }
+
+  return $rval;
+}
+
+function email_unsubmitted_survey_notifications($uid,$name,$email,$year)
+{
+  global $tt_root_url;
+  global $tt_active_year;
+  global $tt_chair;
+  global $tt_admin_email_link;
+
+  $rval = false;
+
+  if( isset($email) && strlen($email)>0 )
+  {
+    $to = $email;
+    $subject = "Unsubmitted Time & Talent Survey";
+
+    $url = "$tt_root_url/tt.php?uid=$uid";
+
+    $message = "
+      <html>
+      <head>
+      <meta http-equiv='Content-Type' content='text/html charset=us-ascii'>
+      </head>
+      <body style='word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;'>
+      <div><br></div>
+      <div>It appears that you started your $year Time &amp; Talent survey but have not yet submitted it.
+      Your response will <b>not</b> be included in the summary report that will be made available to 
+      council and coordinators unless you return to the form and hit the submit button (at the bottom of 
+      the form).</div>
+      <div><br></div>
+      <div>You can revisit your survey using the following link: <a href='$url'>$url</a></div>
+      <div><br></div>
+      <div><br></div>
+
+      </blockquote>
+      Thank you,
+      <div><i>$tt_chair</i></div>
+      <div><br></div>
+      <div>For technical assistance with the online form, contact $tt_admin_email_link</div>
+      </body>
+      </html>
+      ";
+
+    // Always set content-type when sending HTML email
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+    // More headers
+    $headers .= 'From: <tt@ctslutheranelca.org>' . "\r\n";
+
+    if( mail($to,$subject,$message,$headers) )
+    {
+      db_update_reminder($uid);
+      error_log("Unsubmitted updates email sent to $name ($to)");
+      $rval = true;
+    }
+    else
+    {
+      error_log("Failed to send unsubmitted updates to $name ($to)");
+    }
+  }
+  else
+  {
+    error_log("No unsubmitted updates email sent to $name ... no email address");
   }
 
   return $rval;
@@ -120,7 +321,7 @@ function email_account_info($uid,$name,$email,$aid)
     $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 
     // More headers
-    $headers .= 'From: <stewardship@ctslutheranelca.org>' . "\r\n";
+    $headers .= 'From: <tt@ctslutheranelca.org>' . "\r\n";
 
     mail($to,$subject,$message,$headers);
   }
@@ -202,7 +403,7 @@ $html
   // Always set content-type when sending HTML email
 
   // More headers
-  $headers  = 'From: <stewardship@ctslutheranelca.org>' . "\r\n";
+  $headers  = 'From: <tt@ctslutheranelca.org>' . "\r\n";
   $headers .= "MIME-Version: 1.0\r\n";
   $headers .= "Content-type: multipart/alternative;\r\n";
   $headers .= "     boundary=" . $mime_boundary_header;

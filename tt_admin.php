@@ -15,6 +15,36 @@ $db = db_connect();
 
 $statics = db_active_survey_statics($db);
 
+$user_info = db_userid_admin($db);
+usort( $user_info, 'sortInfoByLastName' );
+
+$user_info_map = array();
+foreach ($user_info as $info)
+{
+  $user_info_map[ $info['id'] ] = $info;
+}
+
+
+$submitted             = db_submitted_in_year($db,$tt_year);
+$unsubmitted           = db_unsubmitted_in_year($db,$tt_year);
+$particpated_last_year = db_participation_in_year($db,$tt_year-1);
+
+$userids_with_unsubmitted_updates = array();
+$userids_with_unsubmitted_surveys = array();
+foreach ( array_keys($unsubmitted) as $userid )
+{
+  if( isset($submitted[$userid]) )
+  {
+    $userids_with_unsubmitted_updates[] = $userid;
+  }
+  else
+  {
+    $userids_with_unsubmitted_surveys[] = $userid;
+  }
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -65,14 +95,14 @@ $statics = db_active_survey_statics($db);
 $welcome_sent = $statics['welcome_sent'];
 if( is_null($welcome_sent) ) 
 { 
-  print "Click";
+  print "<div class='tta-list-header'>Click";
   print "<button id='send-id-everyone' data-year='$tt_active_year' class='ui-btn-inline ui-btn'>here</button>";
-  print "to send User ID reminders to everyone\n";
+  print "to send User ID reminders to everyone</div>\n";
 } 
 else 
 {
   $welcome_sent = date('l, F j, Y \a\t h:i:s a', $welcome_sent);
-  print "<span>User ID reminders were sent out to everyone on: $welcome_sent</span>\n";
+  print "<div class='tta-list-header'>User ID reminders were sent out to everyone on: $welcome_sent</div>\n";
 }
 ?>
 </div>
@@ -86,9 +116,6 @@ else
   </thead>
   <tbody>
 <?php
-
-$user_info = db_userid_admin($db);
-usort( $user_info, 'idsByLastNameSort' );
 
 $now = time();
 
@@ -137,17 +164,130 @@ foreach ( $user_info as $info )
 
 <div id=tta-submitted-block data-role=collapsible>
 <h2 id=submitted-surveys>Submitted Surveys</h2>
-The following people have submitted a <?=$tt_year?> survey.
+<?php
+if( count($submitted) == 0 )
+{
+  print "<div class='tta-empty-list'>No surveys have been submitted yet.</div>\n";
+}
+else
+{
+?>
+<div class='tta-list-header'>The following people have submitted a <?=$tt_year?> survey.</div>
+
+<div class='tta-list'>
+<?php
+
+$has_unsubmitted = false;
+foreach ( $user_info as $info )
+{
+  $id    = $info['id'];
+
+  if(isset($submitted[$id]))
+  {
+    $name = $info['name'];
+
+    $extra = '';
+    if(isset($unsubmitted[$id]))
+    {
+      $name = "$name<span class='tta-star'>*</span>";
+      $has_unsubmitted = true;
+    }
+
+    print "<div class='tta-name'>$name</div>\n";
+  }
+}
+print "</div>\n";
+if( $has_unsubmitted )
+{
+  print "<div class='tta-list-footer'>* has made unsubmitted updates</div>\n";
+}
+}
+?>
 </div>
 
 <div id=tta-started-block data-role=collapsible>
-<h2 id=started-surveys>Started Surveys (not yet submitted)</h2>
-The following people have started a <?=$tt_year?> survey, but have not yet submitted it.
+<h2 id=started-surveys>Unsubmitted Updates</h2>
+<?php
+if( count($userids_with_unsubmitted_updates) == 0 )
+{
+  print "<div class='tta-empty-list'>All survey updates have been submitted.</div>\n";
+}
+else
+{
+?>
+<div class='tta-list-header'>The following people have submitted a <?=$tt_year?> survey, but have made chagnes that have not yet been submitted.</div> <div class='tta-click-here'>Click 
+<button id='notify-unsubmitted-updates' data-year='<?=$tt_active_year?>' class='ui-btn-inline ui-btn'>here</button>
+to send an email to remind them to participate.</div>
+
+<div class='tta-list'>
+<?php
+
+foreach ( $userids_with_unsubmitted_updates as $id )
+{
+  if( isset( $user_info_map[$id] ) )
+  {
+    $info = $user_info_map[$id];
+    $name = $info['name'];
+    print "<div class='tta-name'>$name</div>\n";
+  }
+}
+print "</div>\n";
+}
+?>
+</div>
+
+<div id=tta-started-block data-role=collapsible>
+<h2 id=started-surveys>Unsubmitted Surveys</h2>
+<?php
+if( count($userids_with_unsubmitted_surveys) == 0 )
+{
+  print "<div class='tta-empty-list'>All started surveys have been submitted</div>\n";
+}
+else
+{
+?>
+<div class='tta-list-header'>The following people have started a <?=$tt_year?> survey, but have not yet submitted it. </div> <div class='tta-click-here'>Click 
+<button id='notify-unsubmitted-surveys' data-year='<?=$tt_active_year?>' class='ui-btn-inline ui-btn'>here</button>
+to send an email to let them know</div>
+
+<div class='tta-list'>
+<?php
+
+foreach ( $userids_with_unsubmitted_surveys as $id )
+{
+  if( isset( $user_info_map[$id] ) )
+  {
+    $info = $user_info_map[$id];
+    $name = $info['name'];
+    print "<div class='tta-name'>$name</div>\n";
+  }
+}
+print "</div>\n";
+}
+?>
 </div>
 
 <div id=tta-unstarted-block data-role=collapsible>
 <h2 id=unstarted-surveys>Unstarted Surveys</h2>
-The following people have submitted surveys in the past, but have not yet started one this year.
+<div class='tta-list-header'>The following people have submitted surveys in the past, but have not yet started one this year.</div> <div class='tta-click-here'>Click 
+<button id='send-survey-reminders' data-year='<?=$tt_active_year?>' class='ui-btn-inline ui-btn'>here</button>
+to send an email to remind them to participate.</div>
+
+<div class='tta-list'>
+<?php
+
+foreach ( $user_info as $info )
+{
+  $id    = $info['id'];
+
+  if( ! ( isset($unsubmitted[$id]) || isset($submitted[$id]) ))
+  {
+    $name = $info['name'];
+    print "<div class='tta-name'>$name</div>\n";
+  }
+}
+print "</div>\n";
+?>
 </div>
 
 </div>
@@ -156,7 +296,7 @@ The following people have submitted surveys in the past, but have not yet starte
 </html>
 
 <?php
-function idsByLastNameSort($a,$b)
+function sortInfoByLastName($a,$b)
 {
   $aa = explode(' ', $a['name']);
   $bb = explode(' ', $b['name']);

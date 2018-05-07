@@ -269,6 +269,47 @@ function db_survey_groups($idb,$year)
 }
 
 
+function db_submitted_in_year($idb,$year)
+{
+  return db_participation_in_year($idb,$year,1);
+}
+
+function db_unsubmitted_in_year($idb,$year)
+{
+  return db_participation_in_year($idb,$year,0);
+}
+
+function db_participation_in_year($idb,$year,$submitted=NULL)
+{
+  $db = new LocalDB($idb);
+
+  $data = array();
+
+  $sql = "
+    select 
+      p.user_id id, 
+      p.name  name
+    from 
+      participants p,
+      participation_history h
+    where
+      p.user_id = h.user_id and
+      h.year = $year";
+  if( ! is_null($submitted)) { $sql = "$sql and h.submitted = $submitted"; }
+  $sql = "$sql;";
+
+  $result = $db->query($sql);
+
+  while( $row = $result->fetch_assoc() )
+  {
+    $data[$row['id']] = $row['name'];
+  }
+
+  $result->close();
+
+  return $data;
+}
+
 function db_survey_items($idb,$year,$group)
 {
   $db = new LocalDB($idb);

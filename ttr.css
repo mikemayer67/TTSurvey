@@ -92,3 +92,41 @@ input.tta-pending
 {
   border: 2px solid orange;
 }
+
+div.tta-list-header
+{
+  margin-top:1em;
+  font-weight:bold;
+}
+
+div.tta-click-here
+{
+  margin-top:2px;
+  margin-left:1em;
+  margin-bottom:1em;
+  font-style:italic;
+}
+
+div.tta-list
+{
+  margin-left:2em;
+}
+
+div.tta-name
+{
+  margin-top:0.2em;
+}
+
+div.tta-list-footer
+{
+  margin-top:0.7em;
+  margin-left:3em;
+  font-size:90%;
+  font-style:italic;
+  color:#ff7000;
+}
+
+span.tta-star
+{
+  color:#ff7000;
+}
