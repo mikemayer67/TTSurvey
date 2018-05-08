@@ -1,4 +1,4 @@
-<?php
+l<?php
 
 function db_connect()
 {
@@ -821,51 +821,136 @@ function db_clone_prior_year($idb,$year,$user_id)
 
   db_add_participation_history($db,$year,$user_id);
 
-  // copy item level responses
+  // get survey revision cross references
 
-  $tables = array(
-    'response_free_text',
-    'response_roles',
-    'response_role_options'); 
-
-  $columns = array(
-    'response_group_comment' => "a.user_id, $year, 0, a.group_index, a.text", 
-    'response_free_text'     => "a.user_id, $year, 0, a.item_id, a.text", 
-    'response_roles'         => "a.user_id, $year, 0, a.item_id, a.selected, a.qualifier", 
-    'response_role_options'  => "a.user_id, $year, 0, a.item_id, a.option_id, a.selected");
-
-  foreach ($tables as $table)
+  $group_xref = array();
+  $result = $db->query( "select group_index,prior_year_index from survey_groups where year=$year");
+  while( $row = $result->fetch_row() )
   {
-    $col = $columns[$table];
-    $sql = "
-      insert into $table 
-      select $col
-        from survey s, $table a
-       where a.year=$ref_year
-         and s.year=$year
-         and a.item_id=s.item_id
-         and a.user_id='$user_id'
-         and a.submitted=1 ;";
-
-    $db->query($sql);
+    list($new_index,$old_index) = $row;
+    $group_xref[$old_index] = $new_index;
   }
 
-  // cpoy group level responses
+  $option_xref = array();
+  $result = $db->query( "select new_item_id, new_option_id, old_item_id, old_option_id from revised_option_xref");
+  while( $row = $result->fetch_row() )
+  {
+    list($new_id,$new_opt_id,$old_id,$old_opt_id) = $row;
+    $option_xref[$old_id][$old_opt_id][] = array($new_id,$new_opt_id);
+  }
 
-  $table = 'response_group_comment';
-  $col = $columns[$table];
+  $cur_items = array();
+  $result = $db->query("select item_id from survey s where year=$year");
+  while( $row = $result->fetch_row() )
+  {
+    list($id) = $row;
+    $cur_items[$id] = 1;
+  }
+   
+  $cur_options = array();
+  $sql = "select a.item_id, a.option_id from survey s, survey_role_options a where s.year=$year and a.item_id=s.item_id";
+  $result = $db->query($sql);
+  while( $row = $result->fetch_row() )
+  {
+    list($id,$opt_id) = $row;
+    $cur_options[$id][$opt_id] = 1;
+  }
+   
+  // copy free text responses
+  // TODO: add item xref (see option_xref above and role option responses below )
 
   $sql = "
-      insert into $table
-      select $col
-        from survey_groups g, $table a
-       where a.year=$ref_year
-         and g.year=$year
-         and a.group_index=g.group_index
-         and a.user_id='$user_id'
-         and a.submitted=1 ;";
+    select item_id, text
+      from response_free_text
+     where year=$ref_year
+       and user_id='$user_id'
+       and submitted=1 ;";
 
-  $db->query($sql);
+  $result = $db->query($sql);
+  while($row = $result->fetch_row())
+  {
+    list($item_id,$text) = $row;
+    if(isset($cur_items[$item_id]))
+    {
+      db_update_freetext($db,$year,$user_id,$item_id,$text);
+    }
+  }
+
+  // copy role responses
+  // TODO: add item xref (see option_xref above and role option responses below )
+
+  $sql = "
+    select item_id, selected, qualifier
+      from response_roles
+     where year=$ref_year
+       and user_id='$user_id'
+       and submitted=1 ;";
+
+  $result = $db->query($sql);
+  while($row = $result->fetch_row())
+  {
+    list($item_id,$selected,$qualifier) = $row;
+    if(isset($cur_items[$item_id]))
+    {
+      db_update_role($db,$year,$user_id,$item_id,$selected);
+      db_update_role_qualifier($db,$year,$user_id,$item_id,$qualifier);
+    }
+  }
+
+  // copy role option responses
+  
+  $sql = "
+    select item_id, option_id, selected
+      from response_role_options
+     where year=$ref_year
+       and user_id='$user_id'
+       and submitted=1 ;";
+
+  $result = $db->query($sql);
+  while($row = $result->fetch_row())
+  {
+    list($item_id,$option_id,$selected) = $row;
+    if( isset($option_xref[$item_id][$option_id]) )
+    {
+      $xrefs = $option_xref[$item_id][$option_id];
+      foreach( $xrefs as $xref )
+      {
+        list($new_item_id,$new_option_id) = $xref;
+        if (isset($cur_options[$new_item_id][$new_option_id]))
+        {
+          db_update_role_option($db,$year,$user_id,$new_item_id,$new_option_id,$selected);
+          error_log("Cloning option [$user_id,$year,$new_item_id,$new_option_id] from [$ref_year,$item_id,$option_id]");
+        }
+      }
+    }
+    else if(isset($cur_options[$item_id][$option_id]))
+    {
+      db_update_role_option($db,$year,$user_id,$item_id,$option_id,$selected);
+      error_log("Cloning option [$user_id,$year,$item_id,$option_id] from $ref_year");
+    }
+  }
+
+  // copy group level responses
+
+  $last_year = $year - 1;
+  $sql = "
+    select group_index, text
+      from response_group_comment
+     where year=$last_year
+       and user_id='$user_id'
+       and submitted=1 ;";
+  $result = $db->query($sql);
+  while($row = $result->fetch_row())
+  {
+    list($old_index,$text) = $row;
+    if(isset($group_xref[$old_index]))
+    {
+      $new_index = $group_xref[$old_index];
+      db_update_group_comment($db,$year,$user_id,$new_index,$text);
+      error_log("Cloning group comment [$user_id,$year,$new_index] from [$last_year,$old_index]");
+    }
+  }
+
 }
 
 

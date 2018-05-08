@@ -13,7 +13,7 @@ A misconfiguration on the server caused a hiccup.
 
 <br>
 
-Please contact <?=$tt_poc_email_link?> to investigate the error.
+Please contact <?=$tt_admin_email_link?> to investigate the error.
 
 <br>
 
