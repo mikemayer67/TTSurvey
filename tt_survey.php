@@ -236,16 +236,27 @@ try
 
     if( $group['comment'] )
     {
+      $type = $group['comment'];
+      $qualifier = $group['comment_label'];
+
       $label = 'Comments';
-      if( isset($group['comment_qualifier']) )
+      if( isset($tt_comments_label) ) { $label = $tt_comments_label; }
+
+      if( isset($qualifier) )
       {
-        $label .= ' ('.$group['comment_qualifier'].')';
+        if( $type == 1 ) // comment with qualifier
+        {
+          $label = "$label<span class='tt-comment-qualifier'> ($qualifier)</span>";
+        }
+        else // comment with label
+        {
+          $label = $qualifier;
+        }
       }
-      $label .= ':';
       $tag = "comment_$group_id";
 
       print "<div class=tt-comment-box>";
-      print "<div><span class='tt-comment-label'>$label</span>\n";
+      print "<div><span class='tt-comment-label'>$label:</span>\n";
       print "</div>\n";
       print "<textarea id='$tag' class='tt-comment' name='$tag'>\n";
         if( isset($saved_data[$tag]) )

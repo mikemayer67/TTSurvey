@@ -10,13 +10,14 @@ function email_welcome_info($uid,$name,$email,$year)
   global $tt_active_year;
   global $tt_chair;
   global $tt_admin_email_link;
+  global $tt_title;
 
   $rval = false;
 
   if( isset($email) && strlen($email)>0 )
   {
     $to = $email;
-    $subject = "Time & Talent Survey Links";
+    $subject = "$tt_title Links";
 
     $query = "uid=$uid";
     if( isset($aid) && strlen($aid)>0 ) { $query .= "&amp;aid=$aid"; }
@@ -30,7 +31,7 @@ function email_welcome_info($uid,$name,$email,$year)
       </head>
       <body style='word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;'>
       <div><br></div>
-      <div><b>Welcome to the $year CTS Time &amp; Talent Survey.</b></div>
+      <div><b>Welcome to the CTS $tt_title.</b></div>
       <div><br></div>
       <blockquote style='margin: 0 0 0 40px; border: none; padding: 0px;'>
       <div>Your UserID is $uid</div>
@@ -87,7 +88,7 @@ function email_survey_reminder($uid,$name,$email,$year)
   if( isset($email) && strlen($email)>0 )
   {
     $to = $email;
-    $subject = "Time & Talent Survey Reminder";
+    $subject = "CTS $tt_title Reminder";
 
     $url = "$tt_root_url/tt.php?uid=$uid";
 
@@ -221,7 +222,7 @@ function email_unsubmitted_survey_notifications($uid,$name,$email,$year)
   if( isset($email) && strlen($email)>0 )
   {
     $to = $email;
-    $subject = "Unsubmitted Time & Talent Survey";
+    $subject = "Unsubmitted $tt_title";
 
     $url = "$tt_root_url/tt.php?uid=$uid";
 
@@ -283,7 +284,7 @@ function email_account_info($uid,$name,$email,$aid)
   if( isset($email) && strlen($email)>0 )
   {
     $to = $email;
-    $subject = "Time & Talent Survey Links";
+    $subject = "CTS $tt_title Links";
 
     $query = "uid=$uid";
     if( isset($aid) && strlen($aid)>0 ) { $query .= "&amp;aid=$aid"; }
@@ -297,7 +298,7 @@ function email_account_info($uid,$name,$email,$aid)
       </head>
       <body style='word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;'>
       <div><br></div>
-      <div><b>Welcome to the $tt_year CTS Time &amp; Talent Survey.</b></div>
+      <div><b>Welcome to the CTS $tt_title.</b></div>
       <div><br></div>
       <blockquote style='margin: 0 0 0 40px; border: none; padding: 0px;'>
       <div>Your UserID is $uid</div>
@@ -408,7 +409,7 @@ $html
   $headers .= "Content-type: multipart/alternative;\r\n";
   $headers .= "     boundary=" . $mime_boundary_header;
 
-  $subject = "Time & Talent Survey Submission";
+  $subject = "CTS $tt_title Submission";
 
   $rc = mail($email,$subject,$body,$headers);
   if( $rc )

@@ -320,6 +320,11 @@ div.tt-comment-box
   font-weight: bold;
 }
 
+.tt-comment-qualifier
+{
+  font-weight: normal;
+}
+
 .tt-free-text-label,
 .tt-comment-label
 {

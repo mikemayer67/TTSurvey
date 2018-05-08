@@ -46,18 +46,24 @@ try
   if( $tt_poc_email === NULL ) $tt_poc_email = $tt_chair_email;
 
   $tt_year = $tt_active_year;
+
   if(isset($_REQUEST['year'])) { $tt_year = $_REQUEST['year']; }
 
-  $tt_poc_email_uri = "mailto:$tt_poc_email?Subject=".urlencode("$tt_active_year Time & Talent Survey"); 
+  $tt_title = "$tt_year Time & Talent Survey";
+
+  $year_statics = db_survey_statics($tt_year);
+  if( isset($year_statics['campaign_title']) ) { $tt_title = $year_statics['campaign_title']; }
+  if( isset($year_statics['comments_label']) ) { $tt_comments_label = $year_statics['comments_label']; }
+
+  $tt_poc_email_uri = "mailto:$tt_poc_email?Subject=".urlencode($tt_title); 
   $tt_poc_email_link = "<a href='$tt_poc_email_uri'>$tt_poc</a>";
 
-  $tt_chair_email_uri = "mailto:$tt_chair_email?Subject=".urlencode("$tt_active_year Time & Talent Survey");
+  $tt_chair_email_uri = "mailto:$tt_chair_email?Subject=".urlencode($tt_title);
   $tt_chair_email_link = "<a href='$tt_chair_email_uri'>$tt_chair</a>";
 
-  $tt_admin_email_uri = "mailto:$tt_admin_email?Subject=".urlencode("$tt_active_year Time & Talent Survey");
+  $tt_admin_email_uri = "mailto:$tt_admin_email?Subject=".urlencode($tt_title);
   $tt_admin_email_link = "<a href='$tt_admin_email_uri'>$tt_admin</a>";
 
-  $tt_title      = "CTS $tt_year Time &amp; Talent Survey";
   $tt_page_title = "<h1 class='tt-title'><img src='img/cts_logo.png' height=50>$tt_title</h1>";
 
   $tt_root_url = 'http://'.$_SERVER['SERVER_NAME'];
@@ -77,7 +83,7 @@ catch (Exception $e)
 
   echo "<html><head><title>500 Server Error</title></head>\n";
   echo "<body bgcolor=white>\n";
-  echo "<h1 class='tt-title'><img src='img/cts_logo.png' height=50>CTS Time &amp; Talent Survey</h1>";
+  echo "<h1 class='tt-title'><img src='img/cts_logo.png' height=50>$tt_title</h1>";
   echo "<h1>500 Server Error</h1>\n";
   echo "A misconfiguration on the server caused a hiccup.<br>\n";
   echo "Please contact $tt_admin_email_link to investigate the error.<br>\n";

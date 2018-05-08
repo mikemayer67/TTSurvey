@@ -96,6 +96,21 @@ function db_active_survey_statics($idb=null)
   return $data;
 }
 
+function db_survey_statics($year,$idb=null)
+{
+  $db = new LocalDB($idb);
+
+  $result = $db->query("select * from statics where year=$year");
+  $n = $result->num_rows;
+
+  if($n<1) { throw new Exception("No entries in the statics table for $year",500); }
+
+  $data = $result->fetch_assoc();
+  $result->close();
+
+  return $data;
+}
+
 function db_update_statics($key,$value,$idb=null)
 {
   $db = new LocalDB($idb);
