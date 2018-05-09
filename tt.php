@@ -46,7 +46,7 @@ try
     {
       $user_id = $_POST['confirmed'];
 
-      if( ! db_userid_exists($user_id) ) 
+      if( ! db_verify_userid($user_id) ) 
       { 
         throw new Exception( "Invalid user_id provided ($user_id)", 404 );
       }

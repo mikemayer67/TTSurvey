@@ -20,7 +20,7 @@ function gen_user_id($db)
     }
     $id = implode($keys);
 
-    if( ! db_userid_exists($id,$db) ) { return $id; }
+    if( db_record_new_userid($db,$id) ) { return $id; }
   }
 
   throw new Exception("Failed to generate a unique ID in $max_attempts attempts", 500);
@@ -29,9 +29,6 @@ function gen_user_id($db)
 function gen_anon_id($db)
 {
   $anon_id = gen_user_id($db);
-
-  $sql = "insert into user_ids values ('$anon_id')";
-  db_query($db,$sql);
 
   $_SESSION['ANON_ID'] = $anon_id;
 

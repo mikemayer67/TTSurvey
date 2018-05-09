@@ -2,6 +2,7 @@
 
 $dir = dirname(__FILE__);
 
+require_once("$dir/tt_init.php");
 require_once("$dir/db.php");
 
 function email_welcome_info($uid,$name,$email,$year)
@@ -280,6 +281,9 @@ function email_unsubmitted_survey_notifications($uid,$name,$email,$year)
 function email_account_info($uid,$name,$email,$aid)
 {
   global $tt_root_url;
+  global $tt_title;
+  global $tt_chair;
+  global $tt_admin_email_link;
 
   if( isset($email) && strlen($email)>0 )
   {

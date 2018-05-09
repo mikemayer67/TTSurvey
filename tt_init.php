@@ -7,14 +7,15 @@ if( session_status() == PHP_SESSION_NONE)
 
 require_once(dirname(__FILE__).'/db.php');
 
+$tt_delog       = 0;
+
 $tt_admin       = 'Mike Mayer';
 $tt_admin_email = 'mikemayer67@vmwishes.com';
 $tt_admin_uri   = "mailto:$tt_admin_email?Subject=".urlencode("Time & Talent Issue");
 $tt_admin_email_link = "<a href='$tt_admin_uri'>$tt_admin</a>";
 
-$tt_delog       = 0;
-
 $tta_reminder_frequency = 12*3600;  // 12 hours (and yes, this is a period, not frequency)
+
 
 date_default_timezone_set('EST5EDT');
 

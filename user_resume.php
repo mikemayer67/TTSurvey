@@ -7,7 +7,7 @@ if ( ! isset( $_REQUEST['user_id'] ) )
 
 $user_id  = strtoupper($_REQUEST['user_id']);
 
-if( db_userid_exists($user_id) )
+if( db_verify_userid($user_id) )
 {
   $_SESSION['USER_ID'] = $user_id;
   setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);

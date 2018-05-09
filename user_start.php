@@ -3,7 +3,7 @@
 require_once("$dir/gen_user_id.php");
 require_once("$dir/sendmail.php");
 
-$nextPage = 'survey';
+$nextPage = 'tt_survey';
 
 try
 {
@@ -54,15 +54,8 @@ try
 
   try
   {
-    $sql = "insert into user_ids values ('$user_id')";
-    $result = db_query($db,$sql);
-
-    $sql = "insert into participants values ('$user_id','$name','$email')";
-    $result = db_query($db,$sql);
-
-    $sql = "insert into participation_history values ('$user_id',$tt_year,0)";
-    $result - db_query($db,$sql);
-
+    db_record_new_participant($db, $user_id, $name, $email, $tt_year);
+    
     $_SESSION['USER_ID'] = $user_id;
     setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
 

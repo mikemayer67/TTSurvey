@@ -1,4 +1,4 @@
-l<?php
+<?php
 
 function db_connect()
 {
@@ -78,7 +78,6 @@ class LocalDB {
   }
 
 }
-
 
 function db_active_survey_statics($idb=null)
 {
@@ -171,15 +170,56 @@ function db_userid_admin($idb=null)
   return $rval;
 }
 
+function db_unique_userid($id,$idb=null)
+{
+  $id = strtoupper($id);
 
-function db_userid_exists($id,$idb=null)
+  $db = new LocalDB($idb);
+  $result = $db->query("select user_id from user_ids where user_id='$id'");
+
+  $n = $result->num_rows;
+  $result->close();
+
+  return $n==0;
+}
+
+function db_record_new_userid($idb,$id)
+{
+  $db = new LocalDB($idb);
+  $id = strtoupper($id);
+
+  $result = $db->query("select user_id from user_ids where user_id='$id'");
+
+  $n = $result->num_rows;
+  $result->close();
+
+  if( $n == 0 ) 
+  {
+    $db->query("insert into user_ids values('$id')");
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+function db_record_new_participant($idb,$id,$name,$email,$year)
+{
+  $db = new LocalDB($idb);
+  $id = strtoupper($id);
+
+  $db->query("insert into participants values ('$id','$name','$email',NULL)");
+  $db->query("insert into participation_history values ('$id',$year,0)");
+}
+
+function db_verify_userid($id,$idb=null)
 {
   $id = strtoupper($id);
 
   $db = new LocalDB($idb);
 
-  $sql = "select user_id from participants where user_id='$id'";
-  $result = $db->query($sql);
+  $result = $db->query("select user_id from participants where user_id='$id'");
 
   $n = $result->num_rows;
   $result->close();
