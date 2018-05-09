@@ -24,15 +24,19 @@ function validate_passwd()
       type: 'POST',
       url: 'ajax/validate_tta_login.php',
       data: { value: passwd },
-    })
+    } )
     .done( function(data) {
       if( data['valid'] ) {
         $('#tta-passwd').removeClass('ttr-pending').removeClass('ttr-invalid').addClass('ttr-valid');
         $('#tta-login-submit').show();
       }
-      else {
+      else 
+      {
         $('#tta-passwd').removeClass('ttr-pending').removeClass('ttr-valid').addClass('ttr-invalid');
-      } 
+      }
+    } )
+    .fail( function(jqXHR, textStatus, errorCode) {
+      alert('Validate Admin Password Failed [' + errorCode + ']: ' + textStatus);
     } );
   }
 }
