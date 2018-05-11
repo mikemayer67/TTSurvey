@@ -13,7 +13,7 @@ $user_email = $user_info['email'];
 
 if( isset($_SESSION['ANON_ID']) )
 {
-  $anon_id = $_SESSINO['ANON_ID'];
+  $anon_id = $_SESSION['ANON_ID'];
 }
 
 $can_edit = $tt_year == $tt_active_year;

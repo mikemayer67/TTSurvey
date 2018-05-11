@@ -20,7 +20,7 @@ if( isset($tt_error) )
 
 <div data-role="collapsibleset">
   <div data-role="collapsible">
-    <h2 id="new_survey">Start a new survey</h2> 
+    <h2 id="new_survey">I need to setup a Time &amp; Talent ID</h2> 
     <form id='new_survey_form' class='tt-form' method='post' action="tt.php">
       <input type=hidden name=action value=start>
       <p class='tt-form-instruction'>Before we get started, please provide your name and email address.</p>
@@ -35,7 +35,7 @@ if( isset($tt_error) )
     </form>
   </div>
   <div data-role="collapsible">
-    <h2>Resume an existing survey</h2>
+    <h2>I already have a Time &amp; Talent ID</h2>
       <form id="resume_survey_form" class='tt-form' method='post' action="tt.php" autocomplete="off">
       <input type=hidden name=action value=resume>
       <p class='tt-form-instruction'>Please enter the user ID issued when you started filling out the survey.</p>
