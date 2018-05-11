@@ -20,7 +20,7 @@ else if(isset($_COOKIE['tta_passwd']))
 
 if(isset($tta_passwd))
 {
-  $statics = db_active_survey_statics();
+  $statics = db_active_statics();
   $result_pwd = $statics['admin_pwd'];
 
   if( strcmp($tta_passwd, $result_pwd) == 0 )

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<?php require("$dir/tt_head.php"); 
+<?php 
+require_once(dirname(__FILE__).'/tt_head.php'); 
+require_once(dirname(__FILE__).'/db.php');
 
-require_once("$dir/db.php");
 $user_uid = $_SESSION['USER_ID'];
-$user_info = db_user_info($user_uid);
+$user_info = db_get_user_info($user_uid);
 $user_name = $user_info['name'];
 $user_email = $user_info['email'];
 

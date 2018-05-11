@@ -7,7 +7,7 @@ if( ! isset($user_id) )
   throw new Exception('Loaded without \$user_id being set',404);
 }
 
-$data = db_user_info($user_id);
+$data = db_get_user_info($user_id);
 
 if( count($data) == 0 )
 {

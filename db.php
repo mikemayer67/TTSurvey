@@ -1,44 +1,32 @@
 <?php
 
-function db_connect()
-{
-  $db_user = 'ctsluthe_ttadm';
-  $db_pass = 'ctsluthe_ttadm';
-  $db_name = 'ctsluthe_ttsurvey';
-  $db_host = 'localhost';
-
-  $db = mysqli_connect($db_host,$db_user,$db_pass,$db_name);
-
-  if( ! $db ) { throw new Exception('Failed to connect to database',500); }
-
-  if( ! $db->set_charset('utf8') ) { throw new Exception('Failed to use charset utf8',500); }
-
-  return $db;
-}
-
-class LocalDB {
+class TTDB {
   public  $db = null;
-  private $local = false;
+
+  const DB_USER = 'ctsluthe_ttadm';
+  const DB_PASS = 'ctsluthe_ttadm';
+  const DB_NAME = 'ctsluthe_ttsurvey';
+  const DB_HOST = 'localhost';
 
   function __construct($db=null)
   {
     if(is_null($this->db))
     {
-      $this->local = true;
-      $this->db = db_connect();
-    }
-    else
-    {
-      $this->local = false;
-      $this->db = $db;
-    }
-  }
+      $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
-  function __destruct()
-  {
-    if($this->local)
-    {
-      $this->db->close();
+      $err = $mysqli->connect_error;
+      if( $err )
+      {
+        $errno = $mysqli->connect_errno;
+        throw new Exception( "Failed to connect to database[$errno]: $err", 500 );
+      }
+
+      if( ! $mysqli->set_charset('utf8') ) 
+      { 
+        throw new Exception('Failed to set charset to utf8',500); 
+      }
+
+      $this->db = $mysqli;
     }
   }
 
@@ -60,28 +48,19 @@ class LocalDB {
     return $result;
   }
 
-  public function clear_history($year,$user_id,$submitted)
-  {
-    // following will cascade to all response_xxx tables  
-    $sql = "
-    delete from participation_history 
-     where user_id='$user_id' 
-       and year=$year 
-       and submitted=$submitted;";
-
-    $result = $this->query($sql);
-  }
-
   public function escape($value)
   {
     return $this->db->real_escape_string($value);
   }
 
-}
+//
+// STATICS
+//
 
-function db_active_survey_statics($idb=null)
+// Get the current (active) statics
+function db_active_statics()
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $result = $db->query("select * from statics where active=1");
   $n = $result->num_rows;
@@ -90,14 +69,13 @@ function db_active_survey_statics($idb=null)
   if($n<1) { throw new Exception('No active entries in the statics table',500); }
 
   $data = $result->fetch_assoc();
-  $result->close();
-
   return $data;
 }
 
-function db_survey_statics($year,$idb=null)
+// Get the statics for the specified year
+function db_get_statics($year)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $result = $db->query("select * from statics where year=$year");
   $n = $result->num_rows;
@@ -105,14 +83,13 @@ function db_survey_statics($year,$idb=null)
   if($n<1) { throw new Exception("No entries in the statics table for $year",500); }
 
   $data = $result->fetch_assoc();
-  $result->close();
-
   return $data;
 }
 
-function db_update_statics($key,$value,$idb=null)
+// Update the current (active) value for the specified static
+function db_update_statics($key,$value)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   if( is_string($value) )
   {
@@ -124,100 +101,67 @@ function db_update_statics($key,$value,$idb=null)
   }
 }
 
+//
+// USER IDS
+//
+
+// Generates and records a new userid.
+function db_gen_user_id()
+{
+  $db = new TTDB;
+
+  $pool = '123456789123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+  $npool = strlen($pool);
+
+  $max_attempts = 256;
+
+  for($attempt=0; $attempt<$max_attempts; ++$attempt)
+  {
+    $keys = array();
+    for( $i=0; $i<12; $i++)
+    {
+      if( $i>0 && $i % 3 == 0 ) { 
+        $keys[] = '-'; 
+      }
+
+      $keys[] = substr($pool,rand(0,$npool-1),1);
+    }
+    $id = implode($keys);
+
+    $result = $db->query("select user_id from user_ids where user_id='$id'");
+
+    $n = $result->num_rows;
+    $result->close();
+
+    if( $n==0 )
+    {
+      $db->query("insert into user_ids values('$id')");
+      return $id;
+    }
+  }
+
+  throw new Exception("Failed to generate a unique ID in $max_attempts attempts", 500);
+}
+
+//
+// USER INFO
+//
+
+// Sets the last reminder date to current time
 function db_update_reminder($userid,$idb=null)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $now = time();
 
   $db->query("update participants set reminder=$now where user_id='$userid'");
 }
 
-function db_userid_admin($idb=null)
+// Verifies that specified user id is a valid particpant id
+function db_verify_userid($id)
 {
-  $db = new LocalDB($idb);
-
-  $rval = array();
-
-  $sql = "
-    select 
-        user_id, 
-        max(year)
-     from 
-       participation_history
-     where 
-       submitted = 1
-     group by 
-       user_id;";
-
-  $result = $db->query($sql);
-
-  $ids = array();
-  while( $row = $result->fetch_row() )
-  {
-    list($id,$year) = $row;
-    $ids[$id] = $year;
-  }
-
-  foreach($ids as $id=>$year)
-  {
-    $info = db_user_info($id,$db);
-    $info['id']=$id;
-    $info['year']=$year;
-    $rval[] = $info;
-  }
-
-  return $rval;
-}
-
-function db_unique_userid($id,$idb=null)
-{
+  $db = new TTDB;
   $id = strtoupper($id);
-
-  $db = new LocalDB($idb);
-  $result = $db->query("select user_id from user_ids where user_id='$id'");
-
-  $n = $result->num_rows;
-  $result->close();
-
-  return $n==0;
-}
-
-function db_record_new_userid($idb,$id)
-{
-  $db = new LocalDB($idb);
-  $id = strtoupper($id);
-
-  $result = $db->query("select user_id from user_ids where user_id='$id'");
-
-  $n = $result->num_rows;
-  $result->close();
-
-  if( $n == 0 ) 
-  {
-    $db->query("insert into user_ids values('$id')");
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
-
-function db_record_new_participant($idb,$id,$name,$email,$year)
-{
-  $db = new LocalDB($idb);
-  $id = strtoupper($id);
-
-  $db->query("insert into participants values ('$id','$name','$email',NULL)");
-  $db->query("insert into participation_history values ('$id',$year,0)");
-}
-
-function db_verify_userid($id,$idb=null)
-{
-  $id = strtoupper($id);
-
-  $db = new LocalDB($idb);
 
   $result = $db->query("select user_id from participants where user_id='$id'");
 
@@ -227,16 +171,15 @@ function db_verify_userid($id,$idb=null)
   return $n==1;
 }
 
-function db_user_info($id,$idb=null)
+// Returns all information about the specified uesrid
+function db_get_user_info($id)
 {
-  $data = array();
+  $db = new TTDB;
+  $id = strtoupper($id);
 
+  $data = array();
   try
   {
-    $db = new LocalDB($idb);
-
-    $id = strtoupper($id);
-
     $sql = "select name,email,reminder from participants where user_id='$id'";
     $result = $db->query($sql);
 
@@ -255,14 +198,15 @@ function db_user_info($id,$idb=null)
   return $data;
 }
 
+// Updates the name information for the specified userid
 function db_update_user_name($id,$name)
 {
+  $db = new TTDB;
+  $id = strtoupper($id);
+
   $rval = false;
   try
   {
-    $db = new LocalDB();
-
-    $id = strtoupper($id);
     $name = trim($name);
 
     $sql = "update participants set name='$name',reminder=NULL where user_id='$id'";
@@ -276,14 +220,15 @@ function db_update_user_name($id,$name)
   return $rval;
 }
 
+// Updates the email information for the specified userid
 function db_update_user_email($id,$email)
 {
+  $db = new TTDB;
+  $id = strtoupper($id);
+
   $rval = false;
   try
   {
-    $db = new LocalDB();
-
-    $id = strtoupper($id);
     $email = trim($email);
 
     $sql = "update participants set email='$email',reminder=NULL where user_id='$id'";
@@ -297,16 +242,89 @@ function db_update_user_email($id,$email)
   return $rval;
 }
 
-function db_add_participation_history($idb,$year,$user_id)
+
+//
+// PATICIPATION
+//
+
+// Remove a user's participation history for specified year.
+//   This will cascade to remove all responses for that user/year
+public function db_drop_participation($year,$user_id,$submitted)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
+
+  $sql = <<<SQL
+delete from participation_history 
+where  user_id='$user_id' and
+  and  year=$year  and
+  and  submitted=$submitted
+SQL;
+
+  $result = $db->query($sql);
+}
+
+// Adds a new participant to both the particpants and participation_history
+// tables.  If userid already exists, an exception will be thrown
+function db_add_new_participant($id,$name,$email,$year)
+{
+  $db = new TTDB;
+  $id = strtoupper($id);
+
+  $db->query("insert into participants values ('$id','$name','$email',NULL)");
+  $db->query("insert into participation_history values ('$id',$year,0)");
+}
+
+// Updates the participation status for the specified userid
+// The status is set to indicate that a survey was started
+function db_record_survey_start($year,$user_id)
+{
+  $db = new TTDB;
   $sql = "insert ignore into participation_history values ('$user_id',$year,0)";
   $result = $db->query($sql);
 }
 
-function db_survey_groups($idb,$year)
+
+// Gets info + last participation year for all users
+function db_all_participants()
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
+
+  $rval = array();
+
+  $sql = <<<SQL
+select user_id, max(year)
+from   participation_history
+where  submitted = 1
+group  by user_id
+SQL;
+
+  $result = $db->query($sql);
+
+  $ids = array();
+  while( $row = $result->fetch_row() )
+  {
+    list($id,$year) = $row;
+    $ids[$id] = $year;
+  }
+
+  foreach($ids as $id=>$year)
+  {
+    $info = db_get_user_info($id);
+    $info['id']=$id;
+    $info['year']=$year;
+    $rval[] = $info;
+  }
+
+  return $rval;
+}
+
+//
+// SURVEY CONTENT
+//
+
+function db_survey_groups($year)
+{
+  $db = new TTDB;
 
   $data = array();
 
@@ -322,6 +340,8 @@ function db_survey_groups($idb,$year)
 
   return $data;
 }
+
+//---- WORK HERE ----
 
 
 function db_submitted_in_year($idb,$year)
@@ -499,13 +519,13 @@ function db_role_dependencies($idb,$year)
 function db_clear_unsubmitted($idb,$year,$user_id)
 {
   $db = new LocalDB($idb);
-  $db->clear_history($year,$user_id,0);
+  $db->db_drop_participation($year,$user_id,0);
 }
 
 function db_clear_submitted($idb,$year,$user_id)
 {
   $db = new LocalDB($idb);
-  $db->clear_history($year,$user_id,1);
+  $db->db_drop_participation($year,$user_id,1);
 }
 
 function db_promote($idb,$year,$user_id)
@@ -527,7 +547,7 @@ function db_update_role($idb,$year,$user_id,$item_id,$value)
 {
   $db = new LocalDB($idb);
 
-  db_add_participation_history($db,$year,$user_id);
+  db_record_survey_start($year,$user_id);
 
   $sql = "
     insert into response_roles
@@ -543,7 +563,7 @@ function db_update_role_option($idb,$year,$user_id,$item_id,$option_id,$value)
 {
   $db = new LocalDB($idb);
 
-  db_add_participation_history($db,$year,$user_id);
+  db_record_survey_start($year,$user_id);
 
   db_update_role($db,$year,$user_id,$item_id,0);
 
@@ -561,7 +581,7 @@ function db_update_group_comment($idb,$year,$user_id,$group_index,$value)
 {
   $db = new LocalDB($idb);
 
-  db_add_participation_history($db,$year,$user_id);
+  db_record_survey_start($year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
@@ -593,7 +613,7 @@ function db_update_role_qualifier($idb,$year,$user_id,$item_id,$value)
 {
   $db = new LocalDB($idb);
 
-  db_add_participation_history($db,$year,$user_id);
+  db_record_survey_start($year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
@@ -639,7 +659,7 @@ function db_update_freetext($idb,$year,$user_id,$item_id,$value)
 {
   $db = new LocalDB($idb);
 
-  db_add_participation_history($db,$year,$user_id);
+  db_record_survey_start($year,$user_id);
 
   $value = preg_replace('/^\s+/','',$value);
   $value = preg_replace('/\s+$/','',$value);
@@ -859,7 +879,7 @@ function db_clone_prior_year($idb,$year,$user_id)
 
   // start updating the data
 
-  db_add_participation_history($db,$year,$user_id);
+  db_record_survey_start($year,$user_id);
 
   // get survey revision cross references
 

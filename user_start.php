@@ -1,7 +1,7 @@
 <?php
 
-require_once("$dir/gen_user_id.php");
-require_once("$dir/sendmail.php");
+require_once(dirname(__FILE__).'/db.php');
+require_once(dirname(__FILE__).'/sendmail.php');
 
 $nextPage = 'tt_survey';
 
@@ -46,25 +46,16 @@ try
     throw new Exception('user_id_prompt',0);
   }
 
-  $db = db_connect(); 
-
-  $user_id = gen_user_id($db);
+  $user_id = db_gen_user_id();
 
   error_log("New User ID Generated: $user_id  for: $name");
 
-  try
-  {
-    db_record_new_participant($db, $user_id, $name, $email, $tt_year);
-    
-    $_SESSION['USER_ID'] = $user_id;
-    setcookie('_tt_uid', $_SESSION['USER_ID'], time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
+  db_add_new_participant($user_id, $name, $email, $tt_year);
 
-    email_account_info($user_id,$name,$email,'');
-  }
-  finally
-  {
-    $db->close();
-  }
+  $_SESSION['USER_ID'] = $user_id;
+  setcookie('_tt_uid', $user_id, time()+30*86400, '/', '.'.$_SERVER['SERVER_NAME'], false, true);
+
+  email_account_info($user_id,$name,$email,'');
 }
 catch (Exception $e)
 {
@@ -80,6 +71,6 @@ catch (Exception $e)
   }
 }
 
-require("$dir/$nextPage.php");
+require(dirname(__FILE__)."/$nextPage.php");
 
 ?>

@@ -22,7 +22,7 @@ try
 
   if( ! $rval ) { throw new Exception('User Not Found in Database',404); }
 
-  $info = db_user_info($user_id);
+  $info = db_get_user_info($user_id);
 
   $anon_id = ( isset($_SESSION['ANON_ID']) ? $_SESSION['ANON_ID'] : '' );
   email_account_info($user_id, $info['name'], $email, $anon_id );

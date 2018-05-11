@@ -21,7 +21,7 @@ date_default_timezone_set('EST5EDT');
 
 try
 {
-  $statics = db_active_survey_statics();
+  $statics = db_active_statics();
 
   $tt_active_year = $statics['year'];
   $tt_chair_id    = $statics['chair_id'];
@@ -31,8 +31,8 @@ try
 
   if( $tt_chair_id === NULL ) { $tt_chair_id = $tt_admin_id; }
 
-  $chair_info = db_user_info($tt_chair_id);
-  $admin_info = db_user_info($tt_admin_id);
+  $chair_info = db_get_user_info($tt_chair_id);
+  $admin_info = db_get_user_info($tt_admin_id);
 
   $tt_admin = $admin_info['name'];
   $tt_chair = $chair_info['name'];
@@ -52,7 +52,7 @@ try
 
   $tt_title = "$tt_year Time & Talent Survey";
 
-  $year_statics = db_survey_statics($tt_year);
+  $year_statics = db_get_statics($tt_year);
   if( isset($year_statics['campaign_title']) ) { $tt_title = $year_statics['campaign_title']; }
   if( isset($year_statics['comments_label']) ) { $tt_comments_label = $year_statics['comments_label']; }
 

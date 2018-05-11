@@ -12,7 +12,7 @@ try
 
   $user_id = $_REQUEST['user_id'];
 
-  $data = db_user_info($user_id);
+  $data = db_get_user_info($user_id);
 
   if( count($data) == 0 )
   {

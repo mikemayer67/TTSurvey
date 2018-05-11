@@ -17,11 +17,11 @@ try
 
   $userid = $_REQUEST['userid'];
   
-  $user_info = db_user_info($userid);
-  $name = $user_info['name'];
-  $last_reminder = $user_info['reminder'];
+  $user_info = db_get_user_info($userid);
 
+  $name  = $user_info['name'];
   $email = $user_info['email'];
+
   if( ! ( isset($email) && strlen($email) > 0 ) )
   {
     throw new Exception("$name has no email address",418);
@@ -29,6 +29,7 @@ try
 
   $now = time();
 
+  $last_reminder = $user_info['reminder'];
   if( ! is_null($last_reminder) )
   {
     if( $now < $last_reminder + 86400 )

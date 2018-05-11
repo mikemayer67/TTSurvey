@@ -1,6 +1,6 @@
 <?php
 
-require_once("$dir/gen_user_id.php");
+require_once(dirname(__FILE__).'/db.php');
 
 $db = db_connect();
 
@@ -21,9 +21,9 @@ foreach ( $_POST as $key => $value )
   if( isset($_POST[$anon_key]) )
   {
     if( ! isset($anon_id) ) { 
-      $anon_id = gen_anon_id($db); 
+      $anon_id = db_gen_user_id();
+      $_SESSION['ANON_ID'] = $anon_id;
     }
-
     $id = $anon_id;
   }
   else
@@ -86,8 +86,8 @@ if( isset($anon_id) ) {
 <?php require("$dir/tt_head.php"); 
 
 $user_uid = $_SESSION['USER_ID'];
-$user_info = db_user_info($user_uid);
-$user_name = $user_info['name'];
+$user_info  = db_get_user_info($user_uid);
+$user_name  = $user_info['name'];
 $user_email = $user_info['email'];
 
 $link1  = "$tt_root_url/tt.php?uid=$user_uid";

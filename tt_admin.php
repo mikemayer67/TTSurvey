@@ -11,11 +11,9 @@ require_once("$dir/tta_login.php");
 $title = preg_replace("/$tt_year/",$tt_active_year,$tt_title);
 $tt_year = $tt_active_year;
 
-$db = db_connect();
+$statics = db_active_statics();
 
-$statics = db_active_survey_statics($db);
-
-$user_info = db_userid_admin($db);
+$user_info = db_all_participants();
 usort( $user_info, 'sortInfoByLastName' );
 
 $user_info_map = array();
