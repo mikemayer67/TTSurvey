@@ -7,9 +7,7 @@ require_once("$dir/ttr_login.php");
 
 $title = $tt_title;
 
-$db = db_connect();
-
-$data = db_all_results($db,$tt_year);
+$data = db_all_results($tt_year);
 
 if(isset($_REQUEST['print']))
 {

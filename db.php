@@ -1099,10 +1099,10 @@ function db_clone_prior_year($year,$user_id)
 
 }
 
-
-function db_all_results($idb,$year)
+// Returns all of the results for all users for the specified year
+function db_all_results($year)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $result = $db->query("select group_index, label from survey_groups where year=$year");
 

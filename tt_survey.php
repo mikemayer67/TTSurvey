@@ -15,8 +15,7 @@ $can_edit = $tt_year == $tt_active_year;
 
 try
 {
-  $db = db_connect();
-  db_clone_prior_year($db,$tt_year,$user_id);
+  db_clone_prior_year($tt_year,$user_id);
 ?>
 
 <script src="js/tt_survey.js?v=<?=rand()?>"></script>
@@ -29,7 +28,7 @@ try
 <span id=tt_user_id class=tt-user-info>User ID: <span><?=$user_id?></span>
   <button data-role='none'>logout</button></span>
 
-<?php if( $can_edit && db_can_revert($db,$tt_year,$user_id) ) { ?>
+<?php if( $can_edit && db_can_revert($tt_year,$user_id) ) { ?>
 <span id=tt_reload class=tt-user-info>Found Submitted Responses: <button data-role=none>Reload</button></span>
 <?php } ?>
 
@@ -284,10 +283,6 @@ catch (Exception $e)
 ?>
   <script>window.location='<?=$page?>';</script>
 <?php
-}
-finally
-{
-  $db->close();
 }
 
 if($can_edit) {

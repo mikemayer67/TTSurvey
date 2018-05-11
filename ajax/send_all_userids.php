@@ -20,7 +20,7 @@ try
 
   $reply = array( 'sent' => array(), 'failed'=>array(), 'noemail'=>array(), 'toosoon'=>array(), 'sentids' => array() );
 
-  $user_info = db_userid_admin();
+  $user_info = db_all_participants();
 
   foreach ( $user_info as $info )
   {

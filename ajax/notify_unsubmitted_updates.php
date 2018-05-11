@@ -20,9 +20,7 @@ try
 
   $reply = array( 'sent' => array(), 'failed'=>array(), 'noemail'=>array(), 'toosoon'=>array(), 'sentids' => array() );
 
-  $db = db_connect();
-
-  $user_info = db_userid_admin($db);
+  $user_info = db_all_participants();
 
   $submitted   = db_who_has_submitted_forms($year);
   $unsubmitted = db_who_has_unsubmitted_forms($year);

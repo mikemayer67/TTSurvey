@@ -2,8 +2,6 @@
 
 require_once(dirname(__FILE__).'/db.php');
 
-$db = db_connect();
-
 db_drop_unsubmitted($tt_year,$user_id);
 
 if( isset($_SESSION['ANON_ID']) )
