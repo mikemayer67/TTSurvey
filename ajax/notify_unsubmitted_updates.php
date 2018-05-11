@@ -24,8 +24,8 @@ try
 
   $user_info = db_userid_admin($db);
 
-  $submitted   = db_submitted_in_year($db,$year);
-  $unsubmitted = db_unsubmitted_in_year($db,$year);
+  $submitted   = db_who_has_submitted_forms($year);
+  $unsubmitted = db_who_has_unsubmitted_forms($year);
 
   foreach ( $user_info as $info )
   {

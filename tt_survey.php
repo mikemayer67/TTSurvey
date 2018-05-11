@@ -5,8 +5,9 @@
 require_once(dirname(__FILE__).'/tt_head.php'); 
 require_once(dirname(__FILE__).'/db.php');
 
-$user_uid = $_SESSION['USER_ID'];
-$user_info = db_get_user_info($user_uid);
+$user_id = $_SESSION['USER_ID'];
+$anon_id = $_SESSION['ANON_ID'];
+$user_info = db_get_user_info($user_id);
 $user_name = $user_info['name'];
 $user_email = $user_info['email'];
 
@@ -15,7 +16,7 @@ $can_edit = $tt_year == $tt_active_year;
 try
 {
   $db = db_connect();
-  db_clone_prior_year($db,$tt_year,$user_uid);
+  db_clone_prior_year($db,$tt_year,$user_id);
 ?>
 
 <script src="js/tt_survey.js?v=<?=rand()?>"></script>
@@ -25,7 +26,7 @@ try
 <body>
 
 <div id=tt_survey_header class=tt-header>
-<span id=tt_user_uid class=tt-user-info>User ID: <span><?=$user_uid?></span>
+<span id=tt_user_id class=tt-user-info>User ID: <span><?=$user_id?></span>
   <button data-role='none'>logout</button></span>
 
 <?php if( $can_edit && db_can_revert($db,$tt_year,$user_id) ) { ?>
@@ -48,12 +49,12 @@ try
 <input type=hidden name=user_id value='<?=$user_id?>'>
 
 <?php
-  $groups       = db_survey_groups($db,$tt_year);
-  $options      = db_role_options($db,$tt_year);
-  $qualifiers   = db_role_qualifiers($db,$tt_year);
-  $dependencies = db_role_dependencies($db,$tt_year);
+  $groups       = db_get_survey_groups($tt_year);
+  $options      = db_get_role_options($tt_year);
+  $qualifiers   = db_get_role_qualifiers($tt_year);
+  $dependencies = db_get_role_dependencies($tt_year);
 
-  $saved_data = db_retrieve_data($db,$tt_year,$user_id);
+  $saved_data = db_retrieve_user_responses($tt_year,$user_id,$anon_id);
 
   foreach ( $groups as $group )
   {
@@ -76,7 +77,7 @@ try
     print "<div class='$class' $datarole>\n";
     print "<h2 id='survey_group_$group_id' class=tt-group-label>$group_label</h2>\n";
 
-    $items = db_survey_items($db,$tt_year, $group_id);
+    $items = db_get_survey_items($tt_year, $group_id);
 
     foreach ( $items as $item )
     {

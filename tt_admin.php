@@ -22,10 +22,8 @@ foreach ($user_info as $info)
   $user_info_map[ $info['id'] ] = $info;
 }
 
-
-$submitted             = db_submitted_in_year($db,$tt_year);
-$unsubmitted           = db_unsubmitted_in_year($db,$tt_year);
-$particpated_last_year = db_participation_in_year($db,$tt_year-1);
+$submitted             = db_who_has_submitted_forms($tt_year);
+$unsubmitted           = db_who_has_unsubmitted_forms($tt_year);
 
 $userids_with_unsubmitted_updates = array();
 $userids_with_unsubmitted_surveys = array();
@@ -40,8 +38,6 @@ foreach ( array_keys($unsubmitted) as $userid )
     $userids_with_unsubmitted_surveys[] = $userid;
   }
 }
-
-
 
 ?>
 

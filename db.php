@@ -247,6 +247,22 @@ function db_update_user_email($id,$email)
 // PATICIPATION
 //
 
+// Removes a user's unsubmitted responses from the database
+//   removal from participation history will cascade to response tables
+function db_drop_unsubmitted($year,$user_id)
+{
+  $db = new TTDB;
+  $db->db_drop_participation($year,$user_id,0);
+}
+
+// Removes a user's submitted responses from the database
+//   removal from participation history will cascade to response tables
+function db_drop_submitted($year,$user_id)
+{
+  $db = new TTDB;
+  $db->db_drop_participation($year,$user_id,1);
+}
+
 // Remove a user's participation history for specified year.
 //   This will cascade to remove all responses for that user/year
 public function db_drop_participation($year,$user_id,$submitted)
@@ -254,10 +270,10 @@ public function db_drop_participation($year,$user_id,$submitted)
   $db = new TTDB;
 
   $sql = <<<SQL
-delete from participation_history 
-where  user_id='$user_id' and
-  and  year=$year  and
-  and  submitted=$submitted
+    delete from participation_history 
+    where  user_id='$user_id' and
+      and  year=$year  and
+      and  submitted=$submitted
 SQL;
 
   $result = $db->query($sql);
@@ -284,7 +300,7 @@ function db_record_survey_start($year,$user_id)
 }
 
 
-// Gets info + last participation year for all users
+// Returns info + last participation year for all users
 function db_all_participants()
 {
   $db = new TTDB;
@@ -292,10 +308,10 @@ function db_all_participants()
   $rval = array();
 
   $sql = <<<SQL
-select user_id, max(year)
-from   participation_history
-where  submitted = 1
-group  by user_id
+    select user_id, max(year)
+    from   participation_history
+    where  submitted = 1
+    group  by user_id
 SQL;
 
   $result = $db->query($sql);
@@ -318,49 +334,27 @@ SQL;
   return $rval;
 }
 
-//
-// SURVEY CONTENT
-//
+// Returns userids and names of everyone who has a submitted form in specified year
+function db_who_has_submitted_forms($year)
+{
+  return db_who_participated($year,1);
+}
 
-function db_survey_groups($year)
+// Returns userids and names of everyone who has an unsubmitted form in specified year
+function db_who_has_unsubmitted_forms($year)
+{
+  return db_who_participated($year,0);
+}
+
+// Returns userids and names of people who participated in a given year.
+//   If $submitted is specified, it is used to filter the response
+function db_who_participated($year,$submitted=NULL)
 {
   $db = new TTDB;
 
-  $data = array();
+  $rval = array();
 
-  $sql = "select * from survey_groups where year=$year order by group_index";
-  $result = $db->query($sql);
-
-  while( $row = $result->fetch_assoc() )
-  {
-    $data[] = $row;
-  }
-
-  $result->close();
-
-  return $data;
-}
-
-//---- WORK HERE ----
-
-
-function db_submitted_in_year($idb,$year)
-{
-  return db_participation_in_year($idb,$year,1);
-}
-
-function db_unsubmitted_in_year($idb,$year)
-{
-  return db_participation_in_year($idb,$year,0);
-}
-
-function db_participation_in_year($idb,$year,$submitted=NULL)
-{
-  $db = new LocalDB($idb);
-
-  $data = array();
-
-  $sql = "
+  $sql = <<<SQL
     select 
       p.user_id id, 
       p.name  name
@@ -369,29 +363,67 @@ function db_participation_in_year($idb,$year,$submitted=NULL)
       participation_history h
     where
       p.user_id = h.user_id and
-      h.year = $year";
+      h.year = $year
+SQL;
+
   if( ! is_null($submitted)) { $sql = "$sql and h.submitted = $submitted"; }
-  $sql = "$sql;";
 
   $result = $db->query($sql);
 
   while( $row = $result->fetch_assoc() )
   {
-    $data[$row['id']] = $row['name'];
+    $rval[$row['id']] = $row['name'];
   }
 
   $result->close();
 
-  return $data;
+  return $rval;
 }
 
-function db_survey_items($idb,$year,$group)
+// Returns whether or not it is possible for a user to revert their form to 
+//   the last submitted state.
+function db_can_revert($year,$user_id)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
-  $data = array();
+  $result = $db->query("select submitted from participation_history where year=$year and user_id='$user_id' and submitted=1");
 
-  $sql = "
+  $n = $result->num_rows;
+  return $n>0;
+}
+
+//
+// SURVEY CONTENT
+//
+
+// Returns the survey groupings for the specified year
+function db_get_survey_groups($year)
+{
+  $db = new TTDB;
+
+  $rval = array();
+
+  $sql = "select * from survey_groups where year=$year order by group_index";
+  $result = $db->query($sql);
+
+  while( $row = $result->fetch_assoc() )
+  {
+    $rval[] = $row;
+  }
+
+  $result->close();
+
+  return $rval;
+}
+
+// Returns the survey items for the specified year and grouping
+function db_get_survey_items($year,$group)
+{
+  $db = new TTDB;
+
+  $rval = array();
+
+  $sql = <<<SQL
     select 
       s.item_id,
       s.order_index,
@@ -409,35 +441,44 @@ function db_survey_items($idb,$year,$group)
     where
       s.year = $year and
       s.group_index = $group and 
-      i.item_id=s.item_id; ";
+      i.item_id=s.item_id
+SQL;
 
   $result = $db->query($sql);
 
   while( $row = $result->fetch_assoc() )
   {
-    $data[] = $row;
+    $rval[] = $row;
   }
 
   $result->close();
 
-  return $data;
+  return $rval;
 }
 
-function db_role_options($idb,$year)
+// Returns the role options for the specified year
+function db_get_role_options($year)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $rval = array();
 
-  $sql = "
-    select a.item_id,
-           a.option_id,
-           a.option_label,
-           a.is_primary
-      from survey s, survey_role_options a
-     where s.year = $year
-       and a.item_id = s.item_id
-     order by item_id,option_id;";
+  $sql = <<<SQL
+    select 
+      a.item_id,
+      a.option_id,
+      a.option_label,
+      a.is_primary
+    from 
+      survey s, 
+      survey_role_options a
+    where 
+      s.year = $year and 
+      a.item_id = s.item_id
+    order by 
+      item_id,
+      option_id
+SQL;
 
   $result = $db->query($sql);
 
@@ -455,18 +496,24 @@ function db_role_options($idb,$year)
   return $rval;
 }
 
-function db_role_qualifiers($idb,$year)
+// Returns the role qualifiers for the specified year
+function db_get_role_qualifiers($year)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $rval = array();
 
-  $sql = "
-    select concat(a.item_id,'_',a.qualification_option),
-           a.qualification_hint
-      from survey s, survey_role_qualifiers a
-     where s.year = $year
-       and a.item_id = s.item_id;";
+  $sql = <<<SQL
+    select 
+      concat(a.item_id,'_',a.qualification_option),
+      a.qualification_hint
+    from 
+      survey s, 
+      survey_role_qualifiers a
+    where 
+      s.year = $year and 
+      a.item_id = s.item_id
+SQL;
 
   $result = $db->query($sql);
 
@@ -480,19 +527,25 @@ function db_role_qualifiers($idb,$year)
   return $rval;
 }
 
-function db_role_dependencies($idb,$year)
+// Returns the role qualifiers for the specified year
+function db_get_role_dependencies($year)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $rval = array();
 
-  $sql = "
-    select concat(a.item_id,'_',a.option_id) as child,
-           concat(a.item_id,'_',a.require_option_id) as parent 
-      from survey s, survey_role_options a
-     where a.is_primary=0
-       and s.year = $year
-       and a.item_id = s.item_id;";
+  $sql = <<<SQL
+    select 
+      concat(a.item_id,'_',a.option_id) as child,
+      concat(a.item_id,'_',a.require_option_id) as parent 
+    from 
+      survey s, 
+      survey_role_options a
+    where 
+      a.is_primary=0 and 
+      s.year = $year and 
+      a.item_id = s.item_id
+SQL;
 
   $result = $db->query($sql);
 
@@ -516,70 +569,75 @@ function db_role_dependencies($idb,$year)
   return $rval;
 }
 
-function db_clear_unsubmitted($idb,$year,$user_id)
-{
-  $db = new LocalDB($idb);
-  $db->db_drop_participation($year,$user_id,0);
-}
+//
+// UPDATE SURVEY RESPONSES
+//
 
-function db_clear_submitted($idb,$year,$user_id)
+// Promotes all unsubmitted responses for specified user to "submitted"
+//   Making change in participate history will cascase to all response tables
+function db_submit_responses($year,$user_id)
 {
-  $db = new LocalDB($idb);
-  $db->db_drop_participation($year,$user_id,1);
-}
+  $db = new TTDB;
 
-function db_promote($idb,$year,$user_id)
-{
-  $db = new LocalDB($idb);
-  db_clear_submitted($db,$year,$user_id);
+  db_drop_submitted($year,$user_id);
 
-  // following will cascade to all response_xxx tables
-  $sql = "
-    update participation_history
-       set submitted=1
-     where user_id='$user_id'
-       and year=$year";
+  $sql = <<<SQL
+    update 
+      participation_history
+    set 
+      submitted=1
+    where
+      user_id='$user_id' and 
+      year=$year
+SQL;
 
   $result = $db->query($sql);
 }
 
-function db_update_role($idb,$year,$user_id,$item_id,$value)
+// Updates a user's response to a role type entry
+function db_update_role($year,$user_id,$item_id,$value)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   db_record_survey_start($year,$user_id);
 
-  $sql = "
+  $sql = <<<SQL
     insert into response_roles
-           (user_id, year, submitted, item_id, selected)
-    values ('$user_id', $year, 0, $item_id, $value)
-        on duplicate key update
-           selected = $value;";
+      (user_id, year, submitted, item_id, selected)
+    values 
+      ('$user_id', $year, 0, $item_id, $value)
+    on duplicate key 
+      update selected = $value
+SQL;
 
   $result = $db->query($sql);
 }
 
-function db_update_role_option($idb,$year,$user_id,$item_id,$option_id,$value)
+// Updates a user's option selection response to a role type entry
+function db_update_role_option($year,$user_id,$item_id,$option_id,$value)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   db_record_survey_start($year,$user_id);
 
-  db_update_role($db,$year,$user_id,$item_id,0);
+  db_update_role($year,$user_id,$item_id,0);
 
-  $sql = "
+  $sql = <<<SQL
     insert into response_role_options
-           (user_id, year, submitted, item_id, option_id, selected)
-    values ('$user_id', $year, 0, $item_id, $option_id, $value)
-        on duplicate key update
-           selected = $value;";
+      (user_id, year, submitted, item_id, option_id, selected)
+    values 
+      ('$user_id', $year, 0, $item_id, $option_id, $value)
+    on duplicate key 
+      update selected = $value
+SQL;
 
   $result = $db->query($sql);
 }
 
-function db_update_group_comment($idb,$year,$user_id,$group_index,$value)
+// Updates a user's qualifying response to a role type response
+function db_update_role_qualifier($year,$user_id,$item_id,$value)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   db_record_survey_start($year,$user_id);
 
@@ -590,74 +648,53 @@ function db_update_group_comment($idb,$year,$user_id,$group_index,$value)
 
   if( strlen($value) == 0 )
   {
-    $sql = "
-      delete from response_group_comment
-       where user_id='$user_id'
-         and year=$year
-         and submitted=0
-         and group_index=$group_index;";
-  }
-  else
-  {
-    $sql = "
-      insert into response_group_comment
-            (user_id, year, submitted, group_index, text)
-      values ('$user_id', $year, 0, $group_index, '$value')
-          on duplicate key update
-            text = '$value';";
-  }
-  $result = $db->query($sql);
-}
-
-function db_update_role_qualifier($idb,$year,$user_id,$item_id,$value)
-{
-  $db = new LocalDB($idb);
-
-  db_record_survey_start($year,$user_id);
-
-  $value = preg_replace('/^\s+/','',$value);
-  $value = preg_replace('/\s+$/','',$value);
-  $value = preg_replace('/\s+/',' ',$value);
-  $value = $db->escape($value);
-
-  if( strlen($value) == 0 )
-  {
-    $sql = "
-      update response_roles 
-         set qualifier = null
-       where user_id='$user_id'
-         and year=$year
-         and submitted=0
-         and item_id=$item_id;";
+    $sql = <<<SQL
+      update 
+        response_roles 
+      set 
+        qualifier = null
+      where 
+        user_id='$user_id' and 
+        year=$year and 
+        submitted=0 and 
+        item_id=$item_id
+SQL;
 
     $result = $db->query($sql);
   }
   else
   {
-    $sql = "
-      update response_roles 
-         set qualifier='$value'
-       where user_id='$user_id'
-         and year=$year
-         and submitted=0
-         and item_id=$item_id;";
+    $sql = <<<SQL
+      update 
+        response_roles 
+      set 
+        qualifier='$value'
+      where 
+        user_id='$user_id' and 
+        year=$year and 
+        submitted=0 and 
+        item_id=$item_id
+SQL;
 
     $result = $db->query($sql);
 
     if( ! $result ) { 
-      $sql = "
+      $sql = <<<SQL
         insert into response_roles
-               (user_id, year, submitted, item_id, selected, qualifer)
-        values ('$user_id', $year, 0, $group_index, 0, '$value'); ";
+          (user_id, year, submitted, item_id, selected, qualifer)
+        values 
+          ('$user_id', $year, 0, $group_index, 0, '$value')
+SQL;
 
       $result = $db->query($sql);
     }
   }
 }
 
-function db_update_freetext($idb,$year,$user_id,$item_id,$value)
+// Updates a user's group comment 
+function db_update_group_comment($year,$user_id,$group_index,$value)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   db_record_survey_start($year,$user_id);
 
@@ -668,57 +705,111 @@ function db_update_freetext($idb,$year,$user_id,$item_id,$value)
 
   if( strlen($value) == 0 )
   {
-    $sql = "
-      delete from response_free_text
-       where user_id='$user_id'
-         and year=$year
-         and submitted=0
-         and item_id=$item_id;";
+    $sql = <<<SQL
+      delete from 
+        response_group_comment
+      where 
+        user_id='$user_id' and 
+        year=$year and 
+        submitted=0 and 
+        group_index=$group_index
+SQL;
+
   }
   else
   {
-    $sql = "
+    $sql = <<<<SQL
+      insert into response_group_comment
+        (user_id, year, submitted, group_index, text)
+      values 
+        ('$user_id', $year, 0, $group_index, '$value')
+      on duplicate key 
+        update text = '$value'
+SQL;
+
+  }
+  $result = $db->query($sql);
+}
+
+// Updates a user's response to a free text item
+function db_update_freetext($year,$user_id,$item_id,$value)
+{
+  $db = new TTDB;
+
+  db_record_survey_start($year,$user_id);
+
+  $value = preg_replace('/^\s+/','',$value);
+  $value = preg_replace('/\s+$/','',$value);
+  $value = preg_replace('/\s+/',' ',$value);
+  $value = $db->escape($value);
+
+  if( strlen($value) == 0 )
+  {
+    $sql = <<<SQL
+      delete from 
+        response_free_text
+      where 
+        user_id='$user_id' and 
+        year=$year and 
+        submitted=0 and 
+        item_id=$item_id
+SQL;
+  }
+  else
+  {
+    $sql = <<<SQL
       insert into response_free_text
-             (user_id, year, submitted, item_id, text)
-      values ('$user_id', $year, 0, $item_id, '$value')
-          on duplicate key update text = '$value';";
+        (user_id, year, submitted, item_id, text)
+      values 
+        ('$user_id', $year, 0, $item_id, '$value')
+      on duplicate key 
+        update text = '$value'
+SQL;
   }
   $result = $db->query($sql);
 }
 
 
-function db_retrieve_data($db,$year,$user_id)
+//
+// RETRIEVE USER RESPONSES
+//
+
+// Retrieve all data for the specified user (including anonymouse responses
+//   if the anon_id is known
+function db_retrieve_user_responses($year,$user_id,$anon_id)
 {
-  $data = array();
+  $rval = array();
 
-  if( isset( $_SESSION['ANON_ID'] ) )
+  if( isset($anon_id) )
   {
-    $data = db_retrieve_data_for_user($db,$year,$_SESSION['ANON_ID'],1);
+    $rval = db_retrieve_responses_for_userid($year,$anon_id,1);
 
-    foreach ($data as $key=>$value)
+    foreach ($rval as $key=>$value)
     {
-      $data["anon_$key"] = 1;
+      $rval["anon_$key"] = 1;
     }
   }
 
-  $has_working_copy = db_create_working_copy($db,$year,$user_id);
+  $has_working_copy = db_create_working_copy($year,$user_id);
 
   if( $has_working_copy )
   {
-    $user_data = db_retrieve_data_for_user($db,$year,$user_id,0);
-    $data = array_merge($data, $user_data);
+    $user_data = db_retrieve_responses_for_userid($year,$user_id,0);
+    $rval = array_merge($rval, $user_data);
     foreach ( $user_data as $key=>$index )
     {
-      unset( $data['anon_'.$key] );
+      unset( $rval['anon_'.$key] );
     }
   }
 
   return $data;
 }
 
-function db_retrieve_data_for_user($idb,$year,$user_id,$submitted)
+// Retrieve all data for the specified userid, which may be either a
+//   participant or anonymous response
+function db_retrieve_responses_for_userid($year,$user_id,$submitted)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $data = array();
 
@@ -798,9 +889,11 @@ function db_retrieve_data_for_user($idb,$year,$user_id,$submitted)
   return $data;
 }
 
-function db_create_working_copy($idb,$year,$user_id)
+// If specified user has a submitted form but no unsubmitted form, this function
+//   will copy the submitted respones into the unsubmitted form
+function db_create_working_copy($year,$user_id)
 {
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   $result = $db->query("select submitted from participation_history where year=$year and user_id='$user_id'");
 
@@ -842,19 +935,12 @@ function db_create_working_copy($idb,$year,$user_id)
   return true;
 }
 
-function db_can_revert($idb,$year,$user_id)
+// If user submitted a form last year but not yet this year, this method
+//   copies last year's responses  to this year's form.
+// Uses the revision tables to determine mapping from old survey items to current items
+function db_clone_prior_year($year,$user_id)
 {
-  $db = new LocalDB($idb);
-
-  $result = $db->query("select submitted from participation_history where year=$year and user_id='$user_id' and submitted=1");
-
-  $n = $result->num_rows;
-  return $n>0;
-}
-
-function db_clone_prior_year($idb,$year,$user_id)
-{
-  $db = new LocalDB($idb);
+  $db = new TTDB;
 
   // check if already have data for this user this year.  if so, we're done
 

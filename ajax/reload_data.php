@@ -10,11 +10,12 @@ try
   }
 
   $user_id = $_SESSION['USER_ID'];
+  $anon_id = $_SESSION['ANON_ID'];
 
   $db = db_connect();
 
   db_clear($db,$tt_year,$user_id,0);
-  $data = db_retrieve_data($db,$tt_year,$user_id);
+  $data = db_retrieve_user_responses($tt_year,$user_id,$anon_id);
 
   header($_SERVER['SERVER_PROTOCOL'].' 200 Reload Data');
   header('Content-Type: application/json');

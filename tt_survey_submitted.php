@@ -4,12 +4,12 @@ require_once(dirname(__FILE__).'/db.php');
 
 $db = db_connect();
 
-db_clear_unsubmitted($db,$tt_year,$user_id);
+db_drop_unsubmitted($tt_year,$user_id);
 
 if( isset($_SESSION['ANON_ID']) )
 {
   $anon_id = $_SESSION['ANON_ID'];
-  db_clear_unsubmitted($db,$tt_year,$anon_id);
+  db_drop_unsubmitted($tt_year,$anon_id);
 }
 
 foreach ( $_POST as $key => $value )
@@ -37,10 +37,10 @@ foreach ( $_POST as $key => $value )
     switch($nkeys)
     {
     case 2:
-      db_update_role($db,$tt_year,$user_id,$keys[1], 1);
+      db_update_role($tt_year,$user_id,$keys[1], 1);
       break;
     case 3:
-      db_update_role_option($db,$tt_year,$user_id,$keys[1], $keys[2], 1);
+      db_update_role_option($tt_year,$user_id,$keys[1], $keys[2], 1);
       break;
 
     default:
@@ -52,29 +52,29 @@ foreach ( $_POST as $key => $value )
     if( $nkeys != 2 ) {
       throw new Exception('improper set of keys provided for comment',500);
     }
-    db_update_group_comment($db,$tt_year,$id,$keys[1], $value);
+    db_update_group_comment($tt_year,$id,$keys[1], $value);
     break;
 
   case 'qual':
     if( $nkeys != 2 ) {
       throw new Exception('improper set of keys provided for qual',500);
     }
-    db_update_role_qualifier($db,$tt_year,$user_id,$keys[1], $value);
+    db_update_role_qualifier($tt_year,$user_id,$keys[1], $value);
     break;
 
   case 'freetext':
     if( $nkeys != 2 ) {
       throw new Exception('improper set of keys provided for freetext',500);
     }
-    db_update_freetext($db,$tt_year,$id,$keys[1], $value);
+    db_update_freetext($tt_year,$id,$keys[1], $value);
     break;
   }
 }
 
-db_promote($db,$tt_year,$user_id);
+db_submit_responses($tt_year,$user_id);
 
 if( isset($anon_id) ) {
-  db_promote($db,$tt_year,$anon_id); 
+  db_submit_responses($tt_year,$anon_id); 
 }
 
 ?>
