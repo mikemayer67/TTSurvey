@@ -10,9 +10,13 @@ try
   }
 
   $user_id = $_SESSION['USER_ID'];
-  $anon_id = $_SESSION['ANON_ID'];
+  $anon_id = null;
+  if( isset($_SESSION['ANON_ID']) )
+  {
+    $anon_id = $_SESSION['ANON_ID'];
+  }
 
-  db_clear($tt_year,$user_id,0);
+  db_drop_participation($tt_year,$user_id,0);
   $data = db_retrieve_user_responses($tt_year,$user_id,$anon_id);
 
   header($_SERVER['SERVER_PROTOCOL'].' 200 Reload Data');

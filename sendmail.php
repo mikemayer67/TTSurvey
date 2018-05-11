@@ -83,6 +83,7 @@ function email_survey_reminder($uid,$name,$email,$year)
   global $tt_active_year;
   global $tt_chair;
   global $tt_admin_email_link;
+  global $tt_title;
 
   $rval = false;
 
@@ -217,6 +218,7 @@ function email_unsubmitted_survey_notifications($uid,$name,$email,$year)
   global $tt_active_year;
   global $tt_chair;
   global $tt_admin_email_link;
+  global $tt_title;
 
   $rval = false;
 
@@ -334,6 +336,8 @@ function email_account_info($uid,$name,$email,$aid)
 
 function email_submission_feedback($uid,$email,$title,$poc,$poc_email,$ctsimg,$link1,$link2)
 {
+  global $tt_title;
+
   $notice = "This is a multi-part message in MIME format.";
   
     $html = "

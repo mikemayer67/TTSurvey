@@ -1066,14 +1066,12 @@ function db_clone_prior_year($year,$user_id)
         if (isset($cur_options[$new_item_id][$new_option_id]))
         {
           db_update_role_option($year,$user_id,$new_item_id,$new_option_id,$selected);
-          error_log("Cloning option [$user_id,$year,$new_item_id,$new_option_id] from [$ref_year,$item_id,$option_id]");
         }
       }
     }
     else if(isset($cur_options[$item_id][$option_id]))
     {
       db_update_role_option($year,$user_id,$item_id,$option_id,$selected);
-      error_log("Cloning option [$user_id,$year,$item_id,$option_id] from $ref_year");
     }
   }
 
@@ -1094,7 +1092,6 @@ function db_clone_prior_year($year,$user_id)
     {
       $new_index = $group_xref[$old_index];
       db_update_group_comment($year,$user_id,$new_index,$text);
-      error_log("Cloning group comment [$user_id,$year,$new_index] from [$last_year,$old_index]");
     }
   }
 }
