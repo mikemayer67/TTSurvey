@@ -8,11 +8,11 @@ class TTDB {
   const DB_NAME = 'ctsluthe_ttsurvey';
   const DB_HOST = 'localhost';
 
-  function __construct($db=null)
+  function __construct()
   {
     if(is_null($this->db))
     {
-      $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+      $mysqli = new mysqli(self::DB_HOST, self::DB_USER, self::DB_PASS, self::DB_NAME);
 
       $err = $mysqli->connect_error;
       if( $err )
@@ -52,6 +52,7 @@ class TTDB {
   {
     return $this->db->real_escape_string($value);
   }
+};
 
 //
 // STATICS
@@ -251,29 +252,29 @@ function db_update_user_email($id,$email)
 //   removal from participation history will cascade to response tables
 function db_drop_unsubmitted($year,$user_id)
 {
-  $db = new TTDB;
-  $db->db_drop_participation($year,$user_id,0);
+  db_drop_participation($year,$user_id,0);
 }
 
 // Removes a user's submitted responses from the database
 //   removal from participation history will cascade to response tables
 function db_drop_submitted($year,$user_id)
 {
-  $db = new TTDB;
-  $db->db_drop_participation($year,$user_id,1);
+  db_drop_participation($year,$user_id,1);
 }
 
 // Remove a user's participation history for specified year.
 //   This will cascade to remove all responses for that user/year
-public function db_drop_participation($year,$user_id,$submitted)
+function db_drop_participation($year,$user_id,$submitted)
 {
   $db = new TTDB;
 
   $sql = <<<SQL
-    delete from participation_history 
-    where  user_id='$user_id' and
-      and  year=$year  and
-      and  submitted=$submitted
+    delete from 
+      participation_history 
+    where  
+      user_id='$user_id' and
+      year=$year and
+      submitted=$submitted
 SQL;
 
   $result = $db->query($sql);
@@ -718,7 +719,7 @@ SQL;
   }
   else
   {
-    $sql = <<<<SQL
+    $sql = <<<SQL
       insert into response_group_comment
         (user_id, year, submitted, group_index, text)
       values 
@@ -802,7 +803,7 @@ function db_retrieve_user_responses($year,$user_id,$anon_id)
     }
   }
 
-  return $data;
+  return $rval;
 }
 
 // Retrieve all data for the specified userid, which may be either a
@@ -1018,7 +1019,7 @@ function db_clone_prior_year($year,$user_id)
     list($item_id,$text) = $row;
     if(isset($cur_items[$item_id]))
     {
-      db_update_freetext($db,$year,$user_id,$item_id,$text);
+      db_update_freetext($year,$user_id,$item_id,$text);
     }
   }
 
@@ -1038,8 +1039,8 @@ function db_clone_prior_year($year,$user_id)
     list($item_id,$selected,$qualifier) = $row;
     if(isset($cur_items[$item_id]))
     {
-      db_update_role($db,$year,$user_id,$item_id,$selected);
-      db_update_role_qualifier($db,$year,$user_id,$item_id,$qualifier);
+      db_update_role($year,$user_id,$item_id,$selected);
+      db_update_role_qualifier($year,$user_id,$item_id,$qualifier);
     }
   }
 
@@ -1064,14 +1065,14 @@ function db_clone_prior_year($year,$user_id)
         list($new_item_id,$new_option_id) = $xref;
         if (isset($cur_options[$new_item_id][$new_option_id]))
         {
-          db_update_role_option($db,$year,$user_id,$new_item_id,$new_option_id,$selected);
+          db_update_role_option($year,$user_id,$new_item_id,$new_option_id,$selected);
           error_log("Cloning option [$user_id,$year,$new_item_id,$new_option_id] from [$ref_year,$item_id,$option_id]");
         }
       }
     }
     else if(isset($cur_options[$item_id][$option_id]))
     {
-      db_update_role_option($db,$year,$user_id,$item_id,$option_id,$selected);
+      db_update_role_option($year,$user_id,$item_id,$option_id,$selected);
       error_log("Cloning option [$user_id,$year,$item_id,$option_id] from $ref_year");
     }
   }
@@ -1092,11 +1093,10 @@ function db_clone_prior_year($year,$user_id)
     if(isset($group_xref[$old_index]))
     {
       $new_index = $group_xref[$old_index];
-      db_update_group_comment($db,$year,$user_id,$new_index,$text);
+      db_update_group_comment($year,$user_id,$new_index,$text);
       error_log("Cloning group comment [$user_id,$year,$new_index] from [$last_year,$old_index]");
     }
   }
-
 }
 
 // Returns all of the results for all users for the specified year

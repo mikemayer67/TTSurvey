@@ -6,10 +6,15 @@ require_once(dirname(__FILE__).'/tt_head.php');
 require_once(dirname(__FILE__).'/db.php');
 
 $user_id = $_SESSION['USER_ID'];
-$anon_id = $_SESSION['ANON_ID'];
+$anon_id  = null; 
 $user_info = db_get_user_info($user_id);
 $user_name = $user_info['name'];
 $user_email = $user_info['email'];
+
+if( isset($_SESSION['ANON_ID']) )
+{
+  $anon_id = $_SESSINO['ANON_ID'];
+}
 
 $can_edit = $tt_year == $tt_active_year;
 
@@ -25,7 +30,7 @@ try
 <body>
 
 <div id=tt_survey_header class=tt-header>
-<span id=tt_user_id class=tt-user-info>User ID: <span><?=$user_id?></span>
+<span id=tt_user_uid class=tt-user-info>User ID: <span><?=$user_id?></span>
   <button data-role='none'>logout</button></span>
 
 <?php if( $can_edit && db_can_revert($tt_year,$user_id) ) { ?>
