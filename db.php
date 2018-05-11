@@ -327,9 +327,12 @@ SQL;
   foreach($ids as $id=>$year)
   {
     $info = db_get_user_info($id);
-    $info['id']=$id;
-    $info['year']=$year;
-    $rval[] = $info;
+    if(count($info))
+    {
+      $info['id']=$id;
+      $info['year']=$year;
+      $rval[] = $info;
+    }
   }
 
   return $rval;
