@@ -334,6 +334,8 @@ if($include_summary_of_open_responses)
       print "<h3>".$group['label']."</h3>\n";
       foreach ( $group['free_text'] as $item_id ) { 
         $free_text_label = $data['free_text'][$item_id];
+        print "<div class=ttr-role-label>$free_text_label</div>\n";
+
         $has_names = ! empty($data['response_summary']);
         $has_anon  = ! empty($data['anonymous_summary']);
         if( $has_names || $has_anon )
@@ -372,7 +374,6 @@ if($include_summary_of_open_responses)
         }
         else
         {
-          print "<div class=ttr-role-label>$free_text_label</div>\n";
           print "<div class=ttr-no-response>(no responses)</div>\n";
         }
       }
